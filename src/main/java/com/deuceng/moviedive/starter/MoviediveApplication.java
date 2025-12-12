@@ -12,9 +12,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 
 @SpringBootApplication
-@EntityScan(basePackages = {"com.deuceng.moviedive"})//Entitylerimizi görmesini sağladık
+@EntityScan(basePackages = {"com.deuceng.moviedive.entity"})//Entitylerimizi görmesini sağladık
 @ComponentScan(basePackages = {"com.deuceng.moviedive"})//Classlarımızın anatosyanlarını bul
-@EnableJpaRepositories(basePackages = {"com.deuceng.moviedive"})//Jpa repository'in aktif olması için
+@EnableJpaRepositories(basePackages = {"com.deuceng.moviedive.repository"})//Jpa repository'in aktif olması için
 public class MoviediveApplication {
 
     public static void main(String[] args) {
