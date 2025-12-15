@@ -1,0 +1,33 @@
+.auth-overlay{
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(10px);
+    display: grid;
+    place-items: center;
+    padding: 24px;
+}
+
+.auth-modal{
+    width: 420px;
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(6,9,18,0.82);
+    box-shadow: 0 30px 90px rgba(0,0,0,0.65);
+    padding: 22px 22px 18px;
+}
+
+.auth-switch{
+    margin-top: 14px;
+    font-size: 13px;
+    color: rgba(229,231,235,0.7);
+    text-align: center;
+}
+
+.auth-switch span{
+    color: #914859;
+    cursor: pointer;
+    font-weight: 700;
+    margin-left: 6px;
+}

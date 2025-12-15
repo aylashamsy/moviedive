@@ -1,0 +1,112 @@
+.nav{
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(10px);
+    background: rgba(5,7,15,0.55);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.nav-inner{
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 14px 18px;
+    display: grid;
+    grid-template-columns: 240px 1fr 240px;
+    align-items: center;
+    gap: 14px;
+}
+
+.nav-left{
+    cursor: pointer;
+    user-select: none;
+}
+
+.logo{
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 0.6px;
+
+    background: linear-gradient(90deg, #ffffff, #932b43);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+
+    text-shadow: 0 2px 16px rgb(141, 35, 60);
+}
+
+.searchWrap{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.search{
+    width: min(560px, 100%);
+    padding: 12px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.06);
+    outline: none;
+    color: #e5e7eb;
+}
+
+.search::placeholder{
+    color: rgba(229,231,235,0.6);
+}
+
+.nav-right{
+    display: flex;
+    justify-content: flex-end;
+}
+
+.nav-actions{
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.nav-user{
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.nav-link{
+    background: transparent;
+    border: none;
+    color: rgba(229,231,235,0.9);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.nav-btn{
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.12);
+    cursor: pointer;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.nav-btn.ghost{
+    background: rgba(255,255,255,0.06);
+    color: rgba(229,231,235,0.95);
+}
+
+.nav-btn.ghost.active{
+    outline: 2px solid rgba(86, 13, 50, 0.35);
+}
+
+.nav-btn.solid{
+    background: linear-gradient(90deg, #af1b6e, #7c1859);
+    color: #04120a;
+    border: none;
+}
+
+.avatar-btn{
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+}
