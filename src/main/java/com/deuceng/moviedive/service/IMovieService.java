@@ -1,8 +1,8 @@
 package com.deuceng.moviedive.service;
 
-import com.deuceng.moviedive.dto.Dtomovie;
+import com.deuceng.moviedive.dto.TmdbMovieDto;
 
 public interface IMovieService
 {
-    public Dtomovie findbyid(long id);
+    public TmdbMovieDto findbyid(long id);
 }

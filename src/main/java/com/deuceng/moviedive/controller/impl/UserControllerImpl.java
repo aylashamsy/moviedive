@@ -1,11 +1,16 @@
 package com.deuceng.moviedive.controller.impl;
 
 import com.deuceng.moviedive.controller.IUserController;
+import com.deuceng.moviedive.dto.DtoUser;
+import com.deuceng.moviedive.dto.RequestLogin;
 import com.deuceng.moviedive.entity.User;
+import com.deuceng.moviedive.exception.BaseException;
+import com.deuceng.moviedive.exception.ErrorMessage;
+import com.deuceng.moviedive.exception.MessageType;
 import com.deuceng.moviedive.service.IUserService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,19 +25,58 @@ public class UserControllerImpl implements IUserController {
 
     @Override
     @PostMapping(path = "/save_user")
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        return ResponseEntity.ok(userService.saveUser(user));
+    public DtoUser createUser(@RequestBody User user) {
+        return userService.saveUser(user);
     }
 
     @Override
-    @GetMapping("/get_user/{id}")
-    public ResponseEntity<User> getUser(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getUserById(id));
+    @PostMapping(path = "/save_users")
+    public String saveUsers(List<User> users)
+    {
+        return userService.saveUsers(users);
     }
 
     @Override
-    @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    @GetMapping(path="/get_user/{id}")
+    public DtoUser getUser(@PathVariable Long id) {
+        return userService.getUserById(id);
+    }
+
+    @Override
+    @GetMapping(path="/get_all_user")
+    public List<User> getAllUsers() {
+        return userService.getAllUsers();
+    }
+
+    @Override
+    @PostMapping(path="auth/register")
+    public DtoUser saveEmployee(@RequestBody User user)
+    {
+        if(user == null)
+        {
+            throw new BaseException(new ErrorMessage(MessageType.GENERAL_EXCEPTION,"Bir değer girmediniz",user));
+        }
+        return userService.saveUser(user);
+    }
+
+    @Override
+    @PostMapping(path ="auth/login")
+    public String login(@RequestBody RequestLogin request, HttpSession session)
+    {
+        return userService.login(request, session);
+    }
+
+    @Override
+    @GetMapping(path="auth/me")
+    public User me(HttpSession session)
+    {
+        return userService.me(session);
+    }
+
+    @Override
+    @PostMapping(path="auth/logout")
+    public String logout(HttpSession session)
+    {
+        return userService.logout(session);
     }
 }

@@ -8,8 +8,8 @@ import java.util.List;
 @Data
 public class TmdbMovieResponseDto {
 
-    private int page;
+    private Integer page;
     private List<TmdbMovieDto> results;
-    private int total_pages;
-    private int total_results;
+    private final Integer total_pages=500;
+    private Integer total_results;
 }

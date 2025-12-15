@@ -7,11 +7,11 @@ import java.util.List;
 
 public interface IMovieListController {
 
-    ResponseEntity<MovieList> createList(Long userId, MovieList list);
+    MovieList createList(Long userId, MovieList list);
 
-    ResponseEntity<List<MovieList>> getUserLists(Long userId);
+    List<MovieList> getUserLists(Long userId);
 
-    ResponseEntity<MovieList> getList(Long id);
+    MovieList getList(Long id);
 
-    ResponseEntity<Void> deleteList(Long id);
+    void deleteList(Long id);
 }

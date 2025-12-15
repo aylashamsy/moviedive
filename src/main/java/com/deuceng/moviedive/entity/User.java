@@ -38,6 +38,8 @@ public class User {
 
     private String address;
 
+    private Role role;
+
     @ManyToMany
     @JoinTable(
             name = "user_followers",
