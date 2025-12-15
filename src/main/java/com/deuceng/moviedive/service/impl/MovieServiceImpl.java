@@ -1,6 +1,6 @@
 package com.deuceng.moviedive.service.impl;
 
-import com.deuceng.moviedive.dto.Dtomovie;
+import com.deuceng.moviedive.dto.TmdbMovieDto;
 import com.deuceng.moviedive.entity.Movie;
 import com.deuceng.moviedive.repository.MovieRepository;
 import com.deuceng.moviedive.service.IMovieService;
@@ -16,10 +16,11 @@ public class MovieServiceImpl implements IMovieService {
     @Autowired
     private MovieRepository movieRepository;
 
-    public Dtomovie findbyid(long id)
+    @Override
+    public TmdbMovieDto findbyid(long id)
     {
         List<Movie> movieList=movieRepository.findAll();
-        Dtomovie dtomovie=new Dtomovie();
+        TmdbMovieDto dtomovie=new TmdbMovieDto();
         for(int i=0;i<movieList.size();i++)
         {
             Movie temp=movieList.get(i);

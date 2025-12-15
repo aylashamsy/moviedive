@@ -18,10 +18,10 @@ public class Movie
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long GeneralId;
+    private Long id;
 
     @Column(name = "tmdb_id", unique = true, nullable = false)
-    private Long id;
+    private Long tmdbId;
 
     @Column(name="release_year")
     private String release_date;
@@ -52,4 +52,10 @@ public class Movie
 
     @Column(name="postre_url")
     private String poster_path;
+
+    @ManyToMany
+    private List<Director> directors = new ArrayList<>();
+
+    @ManyToMany
+    private List<CastMember> castMembers = new ArrayList<>();
 }

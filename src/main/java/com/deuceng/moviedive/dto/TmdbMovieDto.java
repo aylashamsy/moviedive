@@ -1,6 +1,7 @@
 package com.deuceng.moviedive.dto;
 
 import com.deuceng.moviedive.entity.Genre;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -9,7 +10,8 @@ import java.util.List;
 @Data
 public class TmdbMovieDto {
 
-    private Long id;             // TMDB id
+    @JsonProperty("id")
+    private Long tmdbId;            // TMDB id
     private String title;
     private String vote_count;
     private String overview;

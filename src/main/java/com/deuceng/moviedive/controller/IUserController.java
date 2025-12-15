@@ -1,17 +1,25 @@
 package com.deuceng.moviedive.controller;
 
 
+import com.deuceng.moviedive.dto.DtoUser;
+import com.deuceng.moviedive.dto.RequestLogin;
 import com.deuceng.moviedive.entity.User;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
 
 public interface IUserController {
-    ResponseEntity<User> createUser(User user);
+    DtoUser createUser(User user);
 
-    ResponseEntity<User> getUser(Long id);
+    String saveUsers(List<User> users);
 
-    ResponseEntity<List<User>> getAllUsers();
+    DtoUser getUser(Long id);
+    List<User> getAllUsers();
+
+    public DtoUser saveEmployee(User user);
+    public String login(@RequestBody RequestLogin request, HttpSession session);
+    public User me(HttpSession session);
+    public String logout(HttpSession session);
 }

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/lists")
+@RequestMapping("rest/api/movie_dive/lists")
 @RequiredArgsConstructor
 public class MovieListControllerImpl implements IMovieListController {
 
@@ -19,29 +19,28 @@ public class MovieListControllerImpl implements IMovieListController {
     private IMovieListService movieListService;
 
     @Override
-    @PostMapping("/{userId}")
-    public ResponseEntity<MovieList> createList(
+    @PostMapping("createlist/{userId}")
+    public MovieList createList(
             @PathVariable Long userId,
             @RequestBody MovieList list) {
-        return ResponseEntity.ok(movieListService.createList(userId, list));
+        return movieListService.createList(userId, list);
     }
 
     @Override
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<MovieList>> getUserLists(@PathVariable Long userId) {
-        return ResponseEntity.ok(movieListService.getListsByUserId(userId));
+    @GetMapping("getuserlists/{userId}")
+    public List<MovieList> getUserLists(@PathVariable Long userId) {
+        return movieListService.getListsByUserId(userId);
     }
 
     @Override
-    @GetMapping("/{id}")
-    public ResponseEntity<MovieList> getList(@PathVariable Long id) {
-        return ResponseEntity.ok(movieListService.getListById(id));
+    @GetMapping("getlist/{id}")
+    public MovieList getList(@PathVariable Long id) {
+        return movieListService.getListById(id);
     }
 
     @Override
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteList(@PathVariable Long id) {
+    @DeleteMapping("deletelist/{id}")
+    public void deleteList(@PathVariable Long id) {
         movieListService.deleteList(id);
-        return ResponseEntity.noContent().build();
     }
 }

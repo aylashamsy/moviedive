@@ -1,8 +1,7 @@
 package com.deuceng.moviedive.controller.impl;
 
 import com.deuceng.moviedive.controller.IMovieController;
-import com.deuceng.moviedive.dto.Dtomovie;
-import com.deuceng.moviedive.repository.MovieRepository;
+import com.deuceng.moviedive.dto.TmdbMovieDto;
 import com.deuceng.moviedive.service.IMovieService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,9 +16,11 @@ public class MovieControllerImpl implements IMovieController
     @Autowired
     private IMovieService movieService;
 
+    @Override
     @GetMapping(path="getbyid/{id}")
-    public Dtomovie findbyid(@PathVariable (name="id") long id)
+    public TmdbMovieDto findbyid(@PathVariable (name="id") long id)
     {
         return movieService.findbyid(id);
     }
+
 }
