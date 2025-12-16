@@ -1,9 +1,7 @@
 package com.deuceng.moviedive.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,9 +14,18 @@ import lombok.NoArgsConstructor;
 public class CastMember
 {
     @Id
-    @Column(name="cast_member_id")
+    @Column(name="cast_member_id", nullable = false)
     private Long id;
 
-    @Column(name="cast_member_name")
+    @Column(name="cast_member_name",nullable = false, length = 150)
     private String name;
+
+    @Column(name = "popularity")
+    private Double popularity;
+
+    @Transient//DB'e yazılmaz
+    @JsonIgnore//Responseda gözükmesin
+    private String profile_path;
+
+
 }

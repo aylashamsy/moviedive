@@ -14,13 +14,9 @@ import java.util.List;
 public interface IUserService {
 
     DtoUser getUserById(Long id);
-
     List<User> getAllUsers();
-
-    DtoUser saveUser(User user);
-
-    String saveUsers(List<User> users);
-
+    DtoUser register(User user);
+    String saveUsers(List<DtoUser> users);
     public String login(@RequestBody RequestLogin request, HttpSession session);
     public User me(HttpSession session);
     public String logout(HttpSession session);

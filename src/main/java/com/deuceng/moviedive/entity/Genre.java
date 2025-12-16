@@ -1,9 +1,6 @@
 package com.deuceng.moviedive.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,7 +13,10 @@ import lombok.NoArgsConstructor;
 public class Genre
 {
     @Id
-    private Long id;          // TMDB genre id’yi direkt kullan
-    @Column
-    private String name;
+    private Integer id;          // TMDB genre id’yi direkt kullan
+    @Transient//Bu alan entity’de var, ama veritabanında yok
+    public String getName()
+    {
+        return GenreEnum.fromId(id).getName();
+    }
 }

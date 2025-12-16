@@ -1,6 +1,5 @@
 package com.deuceng.moviedive.service.impl;
 
-// git commit -m "Authentication, Exception, Cast ve Crew Dto eklendi ve ona göre uygun istek atıldı TMDB'e. User service ve controller'ı baştan oluşturuldu."
 import com.deuceng.moviedive.dto.*;
 import com.deuceng.moviedive.entity.CastMember;
 import com.deuceng.moviedive.entity.Director;
@@ -21,6 +20,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,10 +30,7 @@ import static com.deuceng.moviedive.exception.MessageType.NO_RECORD_EXIST;
 @Service
 public class TmdbImportServiceImpl implements ITmdbService {
 
-    @Autowired
-    GenreRepository genreRepository;
-    @Autowired
-    DirectorRepository dirtorRepository;
+
     @Autowired
     CastMemberRepository castMemberRepository;
 
@@ -53,6 +51,8 @@ public class TmdbImportServiceImpl implements ITmdbService {
         this.movieRepository = movieRepository;
     }
 
+    @Autowired
+    GenreRepository genreRepository;
 
     @Override
     public void importPopularMoviesOnce() {
@@ -75,12 +75,12 @@ public class TmdbImportServiceImpl implements ITmdbService {
         // 3) Gelen her film için Movie entity'si oluştur ve kaydet
         for (int i = 0; i < response.getResults().size(); i++) {
             TmdbMovieDto dto = response.getResults().get(i);
-            /*
+
             // Aynı tmdbId varsa tekrar ekleme (istersen)
             if (movieRepository.findById(dto.getTmdbId()).isPresent()) {
                 continue;
             }
-             */
+
 
             if (dto.getTmdbId() == null) {
                 continue;
@@ -96,25 +96,14 @@ public class TmdbImportServiceImpl implements ITmdbService {
                 movie.setPoster_path("https://image.tmdb.org/t/p/w500" + dto.getPoster_path());
             }
 
-            /*
-            List<Genre> genrelist=new ArrayList();
-            Dtogenre dtogenre = new Dtogenre();
-             */
+
 
             List<Genre> genres = dto.getGenre_ids().stream()
-                    .map(genreId -> genreRepository.findById(genreId.longValue())
-                            .orElseGet(() -> {
-                                Genre g = new Genre();
-                                g.setId(genreId.longValue());
-                                g.setName(resolveGenreName(genreId));
-                                return genreRepository.save(g);
-                            }))
-                    .collect(Collectors.toList());
-
+                    .map(id -> genreRepository.findById(id)
+                            .orElseGet(() -> genreRepository.save(new Genre(id))))
+                    .toList();
 
             movie.setGenres(genres);
-
-
 
             movieRepository.save(movie);
         }
@@ -197,29 +186,32 @@ public class TmdbImportServiceImpl implements ITmdbService {
                     }))
             .toList();
 
+
     // Cast members = cast listesi
     List<CastMember> castMembers = human_response.getCast().stream()
+            .sorted(Comparator.comparing(DtoCast::getPopularity,
+                    Comparator.nullsLast(Comparator.reverseOrder())))
+            .limit(5)
             .map(c -> castMemberRepository.findById(c.getId())
                     .orElseGet(() -> {
                         CastMember cm = new CastMember();
                         cm.setId(c.getId());
                         cm.setName(c.getName());
+                        cm.setPopularity(c.getPopularity());
+                        cm.setProfile_path(c.getProfile_path());
                         return castMemberRepository.save(cm);
                     }))
             .toList();
 
-                // genres (senin mevcut kod)
+
+
                 List<Genre> genres = dto.getGenre_ids().stream()
-                        .map(genreId -> genreRepository.findById(genreId.longValue())
-                                .orElseGet(() -> {
-                                    Genre g = new Genre();
-                                    g.setId(genreId.longValue());
-                                    g.setName(resolveGenreName(genreId));
-                                    return genreRepository.save(g);
-                                }))
-                        .collect(Collectors.toList());
+                        .map(id -> genreRepository.findById(id)
+                                .orElseGet(() -> genreRepository.save(new Genre(id))))
+                        .toList();
 
                 movie.setGenres(genres);
+
                 movie.setCastMembers(castMembers);
                 movie.setDirectors(directors);
 
@@ -236,33 +228,6 @@ public class TmdbImportServiceImpl implements ITmdbService {
         System.out.println("Tmdb'den discover import bitti. lastPage=" + (page - 1)
                 + " totalPages=" + totalPages);
     }
-
-
-    private String resolveGenreName(Integer genreId) {
-        return switch (genreId) {
-            case 28 -> "Action";
-            case 12 -> "Adventure";
-            case 16 -> "Animation";
-            case 35 -> "Comedy";
-            case 80 -> "Crime";
-            case 99 -> "Documentary";
-            case 18 -> "Drama";
-            case 10751 -> "Family";
-            case 14 -> "Fantasy";
-            case 36 -> "History";
-            case 27 -> "Horror";
-            case 10402 -> "Music";
-            case 9648 -> "Mystery";
-            case 10749 -> "Romance";
-            case 878 -> "Science Fiction";
-            case 10770 -> "TV Movie";
-            case 53 -> "Thriller";
-            case 10752 -> "War";
-            case 37 -> "Western";
-            default -> "unknown";
-        };
-    }
-
 }
 
 

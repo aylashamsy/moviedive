@@ -16,9 +16,9 @@ import lombok.NoArgsConstructor;
 public class Director
 {
     @Id
-    @Column(name="director_id")
+    @Column(name="director_id", nullable = false)
     private Long id;
 
-    @Column(name = "director_name")
+    @Column(name = "director_name", nullable = false, length = 150)
     private String name;
 }

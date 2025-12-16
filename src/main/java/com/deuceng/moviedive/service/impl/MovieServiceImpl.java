@@ -1,13 +1,20 @@
 package com.deuceng.moviedive.service.impl;
 
+import com.deuceng.moviedive.dto.MovieDto;
 import com.deuceng.moviedive.dto.TmdbMovieDto;
+import com.deuceng.moviedive.entity.Genre;
+import com.deuceng.moviedive.entity.GenreEnum;
 import com.deuceng.moviedive.entity.Movie;
+import com.deuceng.moviedive.exception.BaseException;
+import com.deuceng.moviedive.exception.ErrorMessage;
+import com.deuceng.moviedive.exception.MessageType;
 import com.deuceng.moviedive.repository.MovieRepository;
 import com.deuceng.moviedive.service.IMovieService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -17,18 +24,41 @@ public class MovieServiceImpl implements IMovieService {
     private MovieRepository movieRepository;
 
     @Override
-    public TmdbMovieDto findbyid(long id)
+    public MovieDto findbyid(Long id)
     {
-        List<Movie> movieList=movieRepository.findAll();
-        TmdbMovieDto dtomovie=new TmdbMovieDto();
-        for(int i=0;i<movieList.size();i++)
+        Movie movie=movieRepository.findById(id).orElseThrow(() -> new BaseException(new ErrorMessage(MessageType.NO_RECORD_EXIST," Böyle bir film bulunamadı.",id)));
+        MovieDto dtomovie=new MovieDto();
+        BeanUtils.copyProperties(movie,dtomovie);
+
+        for(int i=0;i<movie.getGenres().size();i++)
         {
-            Movie temp=movieList.get(i);
-            if(temp.getId()==id)
-            {
-                BeanUtils.copyProperties(temp,dtomovie);
-                break;
-            }
+            dtomovie.getGenre_names().add(movie.getGenres().get(i).getName());
+        }
+        return dtomovie;
+    }
+
+    @Override
+    public MovieDto findbyName(String name)
+    {
+        if(movieRepository.findByTitle(name)==null)
+        {
+           throw new BaseException(new ErrorMessage(MessageType.NO_RECORD_EXIST," Böyle bir film bulunamadı.",name));
+        }
+        Movie movie=movieRepository.findByTitle(name);
+        MovieDto dtomovie=new MovieDto();
+        BeanUtils.copyProperties(movie,dtomovie);
+
+        for(int i=0;i<movie.getGenres().size();i++)
+        {
+            dtomovie.getGenre_names().add(movie.getGenres().get(i).getName());
+        }
+        for(int i=0;i<movie.getDirectors().size();i++)
+        {
+            dtomovie.getDirector_names().add(movie.getDirectors().get(i).getName());
+        }
+        for(int i=0;i<movie.getCastMembers().size();i++)
+        {
+            dtomovie.getActors().add(movie.getCastMembers().get(i).getName());
         }
         return dtomovie;
     }
