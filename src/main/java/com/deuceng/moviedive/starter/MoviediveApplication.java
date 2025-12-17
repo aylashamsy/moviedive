@@ -21,12 +21,12 @@ public class MoviediveApplication {
         SpringApplication.run(MoviediveApplication.class, args);
     }
 
-//    @Bean
-//    public CommandLineRunner run(TmdbImportServiceImpl tmdbImportService)
-//    {
-//        return args -> {
-//            tmdbImportService.importAllMoviesWithDiscover();
-//        };
-//    }
+    @Bean
+    public CommandLineRunner run(TmdbImportServiceImpl tmdbImportService)
+    {
+        return args -> {
+            tmdbImportService.importAllMoviesWithDiscover();
+        };
+    }
 }
 

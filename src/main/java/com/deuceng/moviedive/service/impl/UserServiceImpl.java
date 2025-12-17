@@ -24,6 +24,7 @@ public class UserServiceImpl implements IUserService {
 
     @Autowired
     private UserRepository userRepository;
+    private final SessionAuthService sessionAuthService;
 
     @Override
     public DtoUser getUserById(Long id) {
@@ -72,7 +73,7 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public String login(@RequestBody RequestLogin request, HttpSession session)
+    public String login(RequestLogin request, HttpSession session)
     {
         User user = userRepository.findByEmail(request.getEmail());
         if(user == null)
@@ -83,7 +84,7 @@ public class UserServiceImpl implements IUserService {
         {
             throw(new BaseException(new ErrorMessage(MessageType.PASSWORD_INCORRECT,"Hatalı şifre",request.getEmail())));
         }
-        session.setAttribute("EMPLOYEE_ID",user.getId());
+        session.setAttribute("USER_ID",user.getId());
         session.setAttribute("ROLE", user.getRole()); // "ADMIN" / "VIP" / "USER"
         return "login successful";
     }
@@ -91,17 +92,12 @@ public class UserServiceImpl implements IUserService {
     @Override
     public User me(HttpSession session)
     {
-        // Session hiç yoksa
-        if (session == null) {
-            throw new BaseException(new ErrorMessage(MessageType.NO_RECORD_EXIST, "Session does not exist", session));
-        }
-        Long id = (Long) session.getAttribute("EMPLOYEE_ID");
+        Long id = sessionAuthService.requireUserId(session);
 
-        // Session var ama login olunmamışsa
-        if (id == null) {
-            throw new BaseException(new ErrorMessage(MessageType.NO_RECORD_EXIST, "User not logged in", id));
-        }
-        return userRepository.findById(id).get();
+        return userRepository.findById(id)
+                .orElseThrow(() -> new BaseException(
+                        new ErrorMessage(MessageType.NO_RECORD_EXIST, "User not found", id)
+                ));
     }
 
     @Override
@@ -112,19 +108,19 @@ public class UserServiceImpl implements IUserService {
         return "logout successful";
     }
 
-    private void requireAdmin(HttpSession session) {
-        Role role = (Role) session.getAttribute("ROLE");
-        if (role == null || role != role.ADMIN) {
-            throw new BaseException(new ErrorMessage(MessageType.UNAUTHORIZED, "Admin required",role));
-        }
-    }
-
-    private void requireVip(HttpSession session) {
-        Role role = (Role) session.getAttribute("ROLE");
-        if (role == null || (role!=role.VIP) ) {
-            throw new BaseException(new ErrorMessage(MessageType.UNAUTHORIZED, "VIP required",role));
-        }
-    }
+//    private void requireAdmin(HttpSession session) {
+//        Role role = (Role) session.getAttribute("ROLE");
+//        if (role == null || role != role.ADMIN) {
+//            throw new BaseException(new ErrorMessage(MessageType.UNAUTHORIZED, "Admin required",role));
+//        }
+//    }
+//
+//    private void requireVip(HttpSession session) {
+//        Role role = (Role) session.getAttribute("ROLE");
+//        if (role == null || (role!=role.VIP) ) {
+//            throw new BaseException(new ErrorMessage(MessageType.UNAUTHORIZED, "VIP required",role));
+//        }
+//    }
 }
 
 

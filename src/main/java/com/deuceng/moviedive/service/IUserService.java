@@ -21,19 +21,8 @@ public interface IUserService {
 
     String saveUsers(List<User> users);
 
-    public String login(@RequestBody RequestLogin request, HttpSession session);
+    public String login(RequestLogin request, HttpSession session);
     public User me(HttpSession session);
     public String logout(HttpSession session);
-    private void requireAdmin(HttpSession session) {
-        String role = (String) session.getAttribute("ROLE");
-        if (role == null || !role.equals("ADMIN")) {
-            throw new BaseException(new ErrorMessage(MessageType.UNAUTHORIZED, "Admin required",role));
-        }
-    }
-    private void requireVipOrAdmin(HttpSession session) {
-        String role = (String) session.getAttribute("ROLE");
-        if (role == null || !(role.equals("VIP") )) {
-            throw new BaseException(new ErrorMessage(MessageType.UNAUTHORIZED, "VIP required",role));
-        }
-    }
+
 }

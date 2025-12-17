@@ -59,4 +59,7 @@ public class User {
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<MovieList> lists = new HashSet<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<EventRegistration> eventRegistrations = new java.util.ArrayList<>();
+
 }

@@ -1,0 +1,57 @@
+package com.deuceng.moviedive.service.impl;
+
+import com.deuceng.moviedive.entity.Event;
+import com.deuceng.moviedive.entity.Movie;
+import com.deuceng.moviedive.entity.User;
+import com.deuceng.moviedive.exception.BaseException;
+import com.deuceng.moviedive.exception.ErrorMessage;
+import com.deuceng.moviedive.exception.MessageType;
+import com.deuceng.moviedive.repository.EventRepository;
+import com.deuceng.moviedive.repository.MovieRepository;
+import com.deuceng.moviedive.repository.UserRepository;
+import com.deuceng.moviedive.service.IEventService;
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class EventServiceImpl implements IEventService {
+
+    @Autowired
+    private final EventRepository eventRepository;
+    private final UserRepository userRepository;
+    private final MovieRepository movieRepository;
+    private final SessionAuthService sessionAuthService;
+
+    @Override
+    @Transactional
+    public Event createEvent(Event event, HttpSession session) {
+
+        // 1️⃣ VIP kontrolü (EN ÖNEMLİ KURAL)
+        sessionAuthService.requireVip(session);
+
+        // 2️⃣ Login olmuş kullanıcı
+        Long creatorId = sessionAuthService.requireUserId(session);
+        User creator = userRepository.findById(creatorId)
+                .orElseThrow(() -> new BaseException(
+                        new ErrorMessage(MessageType.NO_RECORD_EXIST, "User not found", creatorId)
+                ));
+
+        // 3️⃣ Movie kontrolü (event içinden geliyor)
+        Movie movie = movieRepository.findById(event.getMovie().getId())
+                .orElseThrow(() -> new BaseException(
+                        new ErrorMessage(MessageType.NO_RECORD_EXIST, "Movie not found", event.getMovie().getId())
+                ));
+
+        // 4️⃣ Güvenli alan setleri
+        event.setCreator(creator);
+        event.setMovie(movie);
+
+        // creationTime zaten @PrePersist ile setleniyor
+
+        return eventRepository.save(event);
+    }
+}
