@@ -67,6 +67,14 @@ public class UserServiceImpl implements IUserService {
         {
             throw new BaseException(new ErrorMessage(MessageType.USER_ALREADY_EXISTS," Bu email zaten kullanılıyor ",user.getEmail()));
         }
+        if(userRepository.findByUsername(user.getUsername()).isPresent())
+        {
+            throw new BaseException(new ErrorMessage(MessageType.USER_ALREADY_EXISTS," Bu username zaten kullanılıyor ",user.getUsername()));
+        }
+        if (user.getRole() == null) {
+            user.setRole(Role.USER); // default
+        }
+
         userRepository.save(user);
         DtoUser DtoUser = new DtoUser();
         BeanUtils.copyProperties(user,DtoUser);
@@ -114,7 +122,7 @@ public class UserServiceImpl implements IUserService {
         if (session == null) {
             throw new BaseException(new ErrorMessage(MessageType.NO_RECORD_EXIST, "Session does not exist", session));
         }
-        Long id = (Long) session.getAttribute("EMPLOYEE_ID");
+        Long id = (Long) session.getAttribute("USER_ID");
 
         // Session var ama login olunmamışsa
         if (id == null) {

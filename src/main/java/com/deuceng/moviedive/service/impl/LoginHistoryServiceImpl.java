@@ -27,7 +27,8 @@ public class LoginHistoryServiceImpl implements ILoginHistoryService
     }
 
     @Transactional
-    public void markLogout(String sessionId) {
+    public void markLogout(String sessionId)
+    {
         loginHistoryRepository.markLogout(sessionId);
     }
 }

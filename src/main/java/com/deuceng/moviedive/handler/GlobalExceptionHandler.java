@@ -42,28 +42,12 @@ public class GlobalExceptionHandler
 
     // 3) DB constraint (unique, not-null vs): DataIntegrityViolationException
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ApiError> handleDataIntegrityViolation(DataIntegrityViolationException ex, WebRequest request) {
-
-        // En spesifik mesajdan hangi constraint patladıysa yakalamaya çalış
-        String most = ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : "";
-
-        // Varsayılan mesaj
-        String friendly = "Database constraint ihlal edildi.";
-
-        // username/email unique için tipik postgres constraint adları:
-        // users_username_key, users_email_key (veya senin verdiğin isim)
-        if (most.contains("users_username_key")) {
-            friendly = "Username zaten mevcut";
-        } else if (most.contains("users_email_key")) {
-            friendly = "Email zaten mevcut.";
-        } else if (most.toLowerCase().contains("duplicate key")) {
-            friendly = "Duplicate değer. Bu kayıt zaten mevcut.";
-        } else if (most.toLowerCase().contains("null value")) {
-            friendly = "Gerekli bir alan eksik (NULL değerine izin verilmiyor).";
-        }
-
-        return ResponseEntity.badRequest().body(createApiError(friendly, request));
+    public ResponseEntity<?> handle(DataIntegrityViolationException e) {
+        String root = e.getMostSpecificCause() != null ? e.getMostSpecificCause().getMessage() : e.getMessage();
+        System.out.println("DB CONSTRAINT ERROR => " + root);
+        return ResponseEntity.status(400).body(root);
     }
+
 
     // 4) Hibernate DB constraint exception
     @ExceptionHandler(org.hibernate.exception.ConstraintViolationException.class)
