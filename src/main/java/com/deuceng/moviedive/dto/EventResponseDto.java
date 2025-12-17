@@ -22,5 +22,5 @@ public class EventResponseDto {
     private Long movieId;
     private Long creatorUserId;
 
-    private long activeRegistrationCount;
+    private Long activeRegistrationCount;
 }

@@ -31,7 +31,7 @@ public class UserControllerImpl implements IUserController {
 
     @Override
     @PostMapping(path = "/save_users")
-    public String saveUsers(List<User> users)
+    public String saveUsers(@RequestBody List<User> users)
     {
         return userService.saveUsers(users);
     }
