@@ -12,8 +12,11 @@ import lombok.NoArgsConstructor;
 public class DtoUser
 {
     private String username;
+    private String password;
     private String firstname;
     private String surname;
     private String email;
+    private String phoneNumber;
+    private String address;
     private Role role;
 }

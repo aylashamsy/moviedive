@@ -13,7 +13,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-@Table(name="movie")
+@Table(name="movie",
+        indexes = {
+                @Index(name = "idx_movie_title", columnList = "title")
+        }
+)
 public class Movie
 {
     @Id
@@ -26,9 +30,6 @@ public class Movie
     @Column(name="release_year")
     private String release_date;
 
-    //@Column
-    //private List<String> cast;
-
     @Column(name="rating")
     private Double vote_average;
 
@@ -39,15 +40,10 @@ public class Movie
     @JoinTable(name = "movie_genre", joinColumns = @JoinColumn(name = "movie_id"), inverseJoinColumns = @JoinColumn(name = "genre_id"))
     private List<Genre> genres=new ArrayList<>();
 
-    /*
-    @Column(name="director_name")
-    private String directorName;
-     */
-
     @Column
     private String vote_count;
 
-    @Column
+    @Column(nullable = false, length = 255)
     private String title;
 
     @Column(name="postre_url")

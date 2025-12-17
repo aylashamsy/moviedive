@@ -7,7 +7,11 @@ import com.deuceng.moviedive.entity.User;
 import com.deuceng.moviedive.exception.BaseException;
 import com.deuceng.moviedive.exception.ErrorMessage;
 import com.deuceng.moviedive.exception.MessageType;
+import com.deuceng.moviedive.repository.ActiveSessionsRepository;
+import com.deuceng.moviedive.repository.LoginHistoryRepository;
 import com.deuceng.moviedive.repository.UserRepository;
+import com.deuceng.moviedive.service.IActiveSessionsService;
+import com.deuceng.moviedive.service.ILoginHistoryService;
 import com.deuceng.moviedive.service.IUserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +20,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,12 +33,19 @@ public class UserServiceImpl implements IUserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private IActiveSessionsService activeSessionService;
+
+    @Autowired
+    private ILoginHistoryService loginHistoryService;
+
     @Override
     public DtoUser getUserById(Long id) {
         DtoUser dtoUser = new DtoUser();
-        User user=new User();
         if(userRepository.existsById(id))
         {
+            User user=userRepository.findById(id).orElseThrow(() ->
+                    new BaseException(new ErrorMessage(MessageType.NO_RECORD_EXIST," Kayıt bulunamadı",null)));
             BeanUtils.copyProperties(user,dtoUser);
         }
         else
@@ -46,11 +61,11 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public DtoUser saveUser(User user)
+    public DtoUser register(User user)
     {
-        if(userRepository.findByEmail(user.getEmail())!=null)
+        if(userRepository.findByEmail(user.getEmail()).isPresent())
         {
-            throw new BaseException(new ErrorMessage(MessageType.USER_ALREADY_EXISTS,"Bu email zaten kullanılıyor",user.getEmail()));
+            throw new BaseException(new ErrorMessage(MessageType.USER_ALREADY_EXISTS," Bu email zaten kullanılıyor ",user.getEmail()));
         }
         userRepository.save(user);
         DtoUser DtoUser = new DtoUser();
@@ -59,32 +74,36 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public String saveUsers(List<User> users)
-    {
-//        int i=0;
-//        if(userRepository.findByEmail(users.get(i).getEmail())!=null)
-//        {
-//            throw new BaseException(new ErrorMessage(MessageType.USER_ALREADY_EXISTS,"Bu email zaten kullanılıyor",user.getEmail()));
-//        }
-        userRepository.saveAll(users);
+    public String saveUsers(List<DtoUser> users) {
 
+        List<User> list = users.stream().map(dtoUser -> {
+            User u = userRepository.findByEmail(dtoUser.getEmail())
+                    .orElseGet(User::new); // varsa id dolu gelir -> update
+            // DTO değerlerini her durumda kopyala (update için şart)
+            BeanUtils.copyProperties(dtoUser, u, "id");  // id'yi ezme
+            u.setPassword(dtoUser.getPassword());
+            return u;
+        }).toList();
+
+        userRepository.saveAll(list);
         return "Toplu yükleme başarı ile sonuçlandı";
     }
 
     @Override
     public String login(@RequestBody RequestLogin request, HttpSession session)
     {
-        User user = userRepository.findByEmail(request.getEmail());
-        if(user == null)
-        {
-            throw(new BaseException(new ErrorMessage(MessageType.NO_RECORD_EXIST,"Kayıt bulunamadı",request.getEmail())));
-        }
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() ->
+                new BaseException(new ErrorMessage(MessageType.NO_RECORD_EXIST," Kayıt bulunamadı",request.getEmail())));
+
         if(!user.getPassword().equals(request.getPassword()))
         {
             throw(new BaseException(new ErrorMessage(MessageType.PASSWORD_INCORRECT,"Hatalı şifre",request.getEmail())));
         }
-        session.setAttribute("EMPLOYEE_ID",user.getId());
+        session.setAttribute("USER_ID",user.getId());
         session.setAttribute("ROLE", user.getRole()); // "ADMIN" / "VIP" / "USER"
+        String sessionId = session.getId();
+        loginHistoryService.recordLogin(user.getId(), sessionId);
+        activeSessionService.upsertOnLogin(sessionId, user.getId());
         return "login successful";
     }
 
@@ -107,6 +126,9 @@ public class UserServiceImpl implements IUserService {
     @Override
     public String logout(HttpSession session)
     {
+        String sessionId = session.getId();
+        activeSessionService.remove(sessionId);
+        loginHistoryService.markLogout(sessionId);
         //Session’ın TAMAMINI yok eder
         session.invalidate();
         return "logout successful";

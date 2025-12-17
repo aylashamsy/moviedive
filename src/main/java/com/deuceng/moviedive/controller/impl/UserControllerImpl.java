@@ -9,11 +9,14 @@ import com.deuceng.moviedive.exception.ErrorMessage;
 import com.deuceng.moviedive.exception.MessageType;
 import com.deuceng.moviedive.service.IUserService;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static com.deuceng.moviedive.exception.MessageType.NO_RECORD_EXIST;
 
 @RestController
 @RequestMapping("rest/api/movie_dive/users")
@@ -23,16 +26,15 @@ public class UserControllerImpl implements IUserController {
    @Autowired
     private final IUserService userService;
 
-    @Override
-    @PostMapping(path = "/save_user")
-    public DtoUser createUser(@RequestBody User user) {
-        return userService.saveUser(user);
-    }
 
     @Override
     @PostMapping(path = "/save_users")
-    public String saveUsers(List<User> users)
+    public String saveUsers(@RequestBody List<DtoUser> users)
     {
+        if(users.isEmpty())
+        {
+            throw new BaseException(new ErrorMessage(NO_RECORD_EXIST,"users listesi boş." ,null));
+        }
         return userService.saveUsers(users);
     }
 
@@ -50,18 +52,18 @@ public class UserControllerImpl implements IUserController {
 
     @Override
     @PostMapping(path="auth/register")
-    public DtoUser saveEmployee(@RequestBody User user)
+    public DtoUser register(@RequestBody User user)
     {
         if(user == null)
         {
             throw new BaseException(new ErrorMessage(MessageType.GENERAL_EXCEPTION,"Bir değer girmediniz",user));
         }
-        return userService.saveUser(user);
+        return userService.register(user);
     }
 
     @Override
     @PostMapping(path ="auth/login")
-    public String login(@RequestBody RequestLogin request, HttpSession session)
+    public String login(@RequestBody @Valid RequestLogin request, HttpSession session)
     {
         return userService.login(request, session);
     }
