@@ -17,7 +17,7 @@ public interface IUserService {
     List<User> getAllUsers();
     DtoUser register(User user);
     String saveUsers(List<DtoUser> users);
-    public String login(@RequestBody RequestLogin request, HttpSession session);
+    public String login(RequestLogin request, HttpSession session);
     public User me(HttpSession session);
     public String logout(HttpSession session);
     private void requireAdmin(HttpSession session) {

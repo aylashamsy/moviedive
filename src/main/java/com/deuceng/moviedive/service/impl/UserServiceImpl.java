@@ -90,7 +90,7 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public String login(@RequestBody RequestLogin request, HttpSession session)
+    public String login(RequestLogin request, HttpSession session)
     {
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() ->
                 new BaseException(new ErrorMessage(MessageType.NO_RECORD_EXIST," Kayıt bulunamadı",request.getEmail())));
