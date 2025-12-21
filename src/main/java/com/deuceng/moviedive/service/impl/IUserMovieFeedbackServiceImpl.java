@@ -147,6 +147,7 @@ public class IUserMovieFeedbackServiceImpl implements IUserMovieFeedbackService 
         {
             throw new BaseException(new ErrorMessage<>(MessageType.NO_RECORD_EXIST,"Böyle bir yorum yok", user_id));
         }
+        commentRepository.deleteById(comment_id);
     }
 
 
@@ -167,7 +168,7 @@ public class IUserMovieFeedbackServiceImpl implements IUserMovieFeedbackService 
             dtoUserMovieFeedback.setScore(comments.get(i).getScore());
             dtoUserMovieFeedback.setText(comments.get(i).getComment().getText());
             dtoUserMovieFeedback.setCommentedAt(LocalDateTime.now());
-            dtoUserMovieFeedback.setComment_id(comments.get(i).getId());
+            dtoUserMovieFeedback.setComment_id(comments.get(i).getComment().getId());
             dtocomments.add(dtoUserMovieFeedback);
         }
         return dtocomments;
@@ -190,7 +191,7 @@ public class IUserMovieFeedbackServiceImpl implements IUserMovieFeedbackService 
             dtoUserMovieFeedback.setScore(comments.get(i).getScore());
             dtoUserMovieFeedback.setText(comments.get(i).getComment().getText());
             dtoUserMovieFeedback.setCommentedAt(LocalDateTime.now());
-            dtoUserMovieFeedback.setComment_id(comments.get(i).getId());
+            dtoUserMovieFeedback.setComment_id(comments.get(i).getComment().getId());
             dtocomments.add(dtoUserMovieFeedback);
         }
         return dtocomments;

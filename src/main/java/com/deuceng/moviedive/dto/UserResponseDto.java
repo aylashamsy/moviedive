@@ -12,5 +12,4 @@ public class UserResponseDto {
     private String phoneNumber;
     private String email;
     private Role role;
-    //City city
 }

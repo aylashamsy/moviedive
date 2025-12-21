@@ -1,11 +1,14 @@
 package com.deuceng.moviedive.service.impl;
 
-import com.deuceng.moviedive.dto.DtoUpdateUserRequest;
+import com.deuceng.moviedive.dto.RegisterRequest;
+import com.deuceng.moviedive.dto.RegisterResponse;
 import com.deuceng.moviedive.dto.UserResponseDto;
+import com.deuceng.moviedive.entity.City;
 import com.deuceng.moviedive.entity.User;
 import com.deuceng.moviedive.exception.BaseException;
 import com.deuceng.moviedive.exception.ErrorMessage;
 import com.deuceng.moviedive.exception.MessageType;
+import com.deuceng.moviedive.repository.CityRepository;
 import com.deuceng.moviedive.repository.UserRepository;
 import com.deuceng.moviedive.service.IProfileServices;
 import org.springframework.beans.BeanUtils;
@@ -16,8 +19,10 @@ import org.springframework.stereotype.Service;
 public class ProfileServiceImpl implements IProfileServices {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private CityRepository cityRepository;
 
-    public UserResponseDto updateProfile(Long id, DtoUpdateUserRequest request) {
+    public RegisterResponse updateProfile(Long id, RegisterRequest request) {
         User user = userRepository.findById(id).
                 orElseThrow(() -> new BaseException(new ErrorMessage<>(MessageType.NO_RECORD_EXIST, " Böyle bir kullanıcı yok", id)));
 
@@ -28,32 +33,40 @@ public class ProfileServiceImpl implements IProfileServices {
         if (request.getSurname() != null) user.setSurname(request.getSurname());
         if (request.getPhoneNumber() != null) user.setPhoneNumber(request.getPhoneNumber());
         if (request.getEmail() != null) user.setEmail(request.getEmail());
-        //if (request.getAddress() != null) user.setAddress(request.getAddress());
         if (request.getPassword() != null) user.setPassword(request.getPassword());
         if (request.getRole() != null)
         {
             user.setRole(request.getRole());
         }
+        if(request.getCityId() !=null)
+        {
+            City city = cityRepository.findById(request.getCityId()).orElseThrow(() -> new BaseException(new ErrorMessage<>(MessageType.NO_RECORD_EXIST, " Böyle bir city yok", id)));
+            user.setCity(city);
+        };
         userRepository.save(user);
-        UserResponseDto dtoUpdateUserRequest = new UserResponseDto();
+        RegisterResponse dtoUpdateUserRequest = new RegisterResponse();
         BeanUtils.copyProperties(user, dtoUpdateUserRequest);
+        dtoUpdateUserRequest.setCityName(user.getCity().getName());
         return dtoUpdateUserRequest;
     }
 
-    public DtoUpdateUserRequest getUser(Long id) {
+    public RegisterRequest getUser(Long id) {
         User user = userRepository.findById(id).
                 orElseThrow(() -> new BaseException(new ErrorMessage<>(MessageType.NO_RECORD_EXIST, " Böyle bir kullanıcı yok", id)));
-        DtoUpdateUserRequest dtoUpdateUserRequest = new DtoUpdateUserRequest();
+
+        RegisterRequest dtoUpdateUserRequest = new RegisterRequest();
         BeanUtils.copyProperties(user, dtoUpdateUserRequest);
+        dtoUpdateUserRequest.setCityId(user.getCity().getId());
         return dtoUpdateUserRequest;
     }
 
-    public DtoUpdateUserRequest findByUsername(String name)
+    public RegisterRequest findByUsername(String name)
     {
         User user = userRepository.findByUsername(name).
                 orElseThrow(() -> new BaseException(new ErrorMessage<>(MessageType.NO_RECORD_EXIST, " Böyle bir kullanıcı yok", name)));
-        DtoUpdateUserRequest dtoUpdateUserRequest = new DtoUpdateUserRequest();
+        RegisterRequest dtoUpdateUserRequest = new RegisterRequest();
         BeanUtils.copyProperties(user, dtoUpdateUserRequest);
+        dtoUpdateUserRequest.setCityId(user.getCity().getId());
         return dtoUpdateUserRequest;
     }
 }

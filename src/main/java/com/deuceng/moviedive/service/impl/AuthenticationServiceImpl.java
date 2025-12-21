@@ -1,34 +1,30 @@
 package com.deuceng.moviedive.service.impl;
 
-import com.deuceng.moviedive.dto.DtoUser;
+import com.deuceng.moviedive.dto.RegisterRequest;
+import com.deuceng.moviedive.dto.RegisterResponse;
 import com.deuceng.moviedive.dto.RequestLogin;
+import com.deuceng.moviedive.entity.City;
 import com.deuceng.moviedive.entity.Role;
 import com.deuceng.moviedive.entity.User;
 import com.deuceng.moviedive.exception.BaseException;
 import com.deuceng.moviedive.exception.ErrorMessage;
 import com.deuceng.moviedive.exception.MessageType;
-import com.deuceng.moviedive.repository.ActiveSessionsRepository;
-import com.deuceng.moviedive.repository.LoginHistoryRepository;
+import com.deuceng.moviedive.repository.CityRepository;
 import com.deuceng.moviedive.repository.UserRepository;
 import com.deuceng.moviedive.service.IActiveSessionsService;
 import com.deuceng.moviedive.service.ILoginHistoryService;
-import com.deuceng.moviedive.service.IUserService;
+import com.deuceng.moviedive.service.IAuthenticationService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements IUserService {
+public class AuthenticationServiceImpl implements IAuthenticationService {
 
     @Autowired
     private UserRepository userRepository;
@@ -38,21 +34,23 @@ public class UserServiceImpl implements IUserService {
 
     @Autowired
     private ILoginHistoryService loginHistoryService;
+    @Autowired
+    private CityRepository cityRepository;
 
     @Override
-    public DtoUser getUserById(Long id) {
-        DtoUser dtoUser = new DtoUser();
+    public RegisterRequest getUserById(Long id) {
+        RegisterRequest dtoUpdateUserRequest = new RegisterRequest();
         if(userRepository.existsById(id))
         {
-            User user=userRepository.findById(id).orElseThrow(() ->
+            User user= userRepository.findById(id).orElseThrow(() ->
                     new BaseException(new ErrorMessage(MessageType.NO_RECORD_EXIST," Kayıt bulunamadı",null)));
-            BeanUtils.copyProperties(user,dtoUser);
+            BeanUtils.copyProperties(user, dtoUpdateUserRequest);
         }
         else
         {
             throw new BaseException(new ErrorMessage(MessageType.NO_RECORD_EXIST,"Böyle bir kullanıcı yok",id));
         }
-        return dtoUser;
+        return dtoUpdateUserRequest;
     }
 
     @Override
@@ -61,28 +59,70 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public DtoUser register(User user)
-    {
-        if(userRepository.findByEmail(user.getEmail()).isPresent())
-        {
-            throw new BaseException(new ErrorMessage(MessageType.USER_ALREADY_EXISTS," Bu email zaten kullanılıyor ",user.getEmail()));
+    public RegisterResponse register(RegisterRequest dtoUser) {
+
+        if (dtoUser == null) {
+            throw new BaseException(new ErrorMessage(
+                    MessageType.GENERAL_EXCEPTION,
+                    "Bir değer girmediniz",
+                    null
+            ));
         }
-        if(userRepository.findByUsername(user.getUsername()).isPresent())
-        {
-            throw new BaseException(new ErrorMessage(MessageType.USER_ALREADY_EXISTS," Bu username zaten kullanılıyor ",user.getUsername()));
+
+        if (userRepository.findByEmail(dtoUser.getEmail()).isPresent()) {
+            throw new BaseException(new ErrorMessage(
+                    MessageType.USER_ALREADY_EXISTS,
+                    "Bu email zaten kullanılıyor",
+                    dtoUser.getEmail()
+            ));
         }
-        if (user.getRole() == null) {
-            user.setRole(Role.USER); // default
+
+        if (userRepository.findByUsername(dtoUser.getUsername()).isPresent()) {
+            throw new BaseException(new ErrorMessage(
+                    MessageType.USER_ALREADY_EXISTS,
+                    "Bu username zaten kullanılıyor",
+                    dtoUser.getUsername()
+            ));
         }
+
+        // ✅ cityId zorunlu (DTO'n böyle)
+        if (dtoUser.getCityId() == null) {
+            throw new BaseException(new ErrorMessage(
+                    MessageType.GENERAL_EXCEPTION,
+                    "City seçmelisiniz",
+                    dtoUser.getEmail()
+            ));
+        }
+
+        City city = cityRepository.findById(dtoUser.getCityId())
+                .orElseThrow(() -> new BaseException(
+                        new ErrorMessage(MessageType.GENERAL_EXCEPTION, "City bulunamadı", dtoUser.getCityId())
+                ));
+
+        User user = new User();
+        // cityId map olmaz, o yüzden hariç tut
+        BeanUtils.copyProperties(dtoUser, user, "cityId");
+
+        user.setCity(city);
+
+        // role default
+        user.setRole(dtoUser.getRole() == null ? Role.USER : dtoUser.getRole());
+
+        user.setPassword(dtoUser.getPassword());
 
         userRepository.save(user);
-        DtoUser DtoUser = new DtoUser();
-        BeanUtils.copyProperties(user,DtoUser);
-        return DtoUser;
+
+        // response
+        RegisterResponse response = new RegisterResponse();
+        BeanUtils.copyProperties(user, response);
+        response.setCityName(city.getName());
+
+        return response;
     }
 
+    //Yardımcı method, tablo doldurmak için
     @Override
-    public String saveUsers(List<DtoUser> users) {
+    public String saveUsers(List<RegisterRequest> users) {
 
         List<User> list = users.stream().map(dtoUser -> {
             User u = userRepository.findByEmail(dtoUser.getEmail())
@@ -98,7 +138,7 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public String login(RequestLogin request, HttpSession session)
+    public boolean login(RequestLogin request, HttpSession session)
     {
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() ->
                 new BaseException(new ErrorMessage(MessageType.NO_RECORD_EXIST," Kayıt bulunamadı",request.getEmail())));
@@ -112,7 +152,7 @@ public class UserServiceImpl implements IUserService {
         String sessionId = session.getId();
         loginHistoryService.recordLogin(user.getId(), sessionId);
         activeSessionService.upsertOnLogin(sessionId, user.getId());
-        return "login successful";
+        return true;
     }
 
     @Override
@@ -142,6 +182,12 @@ public class UserServiceImpl implements IUserService {
         return "logout successful";
     }
 
+    public void deleteUser(Long id)
+    {
+        User user = userRepository.findById(id).orElseThrow(() -> new BaseException(new ErrorMessage(MessageType.NO_RECORD_EXIST," Kayıt bulunamadı",id)));
+        userRepository.delete(user);
+    }
+
     private void requireAdmin(HttpSession session) {
         Role role = (Role) session.getAttribute("ROLE");
         if (role == null || role != role.ADMIN) {
@@ -156,6 +202,5 @@ public class UserServiceImpl implements IUserService {
         }
     }
 }
-
 
 

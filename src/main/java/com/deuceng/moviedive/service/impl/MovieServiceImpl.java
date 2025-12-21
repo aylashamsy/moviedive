@@ -94,6 +94,7 @@ public class MovieServiceImpl implements IMovieService {
         }
         MovieDto dtomovie = new MovieDto();
         BeanUtils.copyProperties(movie,dtomovie);
+        dtomovie.setPoster_url(movie.getPoster_path());
         for(int i=0;i<movie.getGenres().size();i++)
         {
             dtomovie.getGenre_names().add(movie.getGenres().get(i).getName());

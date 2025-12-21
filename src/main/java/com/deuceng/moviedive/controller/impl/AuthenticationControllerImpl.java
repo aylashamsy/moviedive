@@ -1,7 +1,8 @@
 package com.deuceng.moviedive.controller.impl;
 
 import com.deuceng.moviedive.controller.IAuthenticationController;
-import com.deuceng.moviedive.dto.DtoUpdateUserRequest;
+import com.deuceng.moviedive.dto.RegisterRequest;
+import com.deuceng.moviedive.dto.RegisterResponse;
 import com.deuceng.moviedive.dto.RequestLogin;
 import com.deuceng.moviedive.entity.Role;
 import com.deuceng.moviedive.entity.User;
@@ -30,7 +31,7 @@ public class AuthenticationControllerImpl implements IAuthenticationController {
 
     @Override
     @PostMapping(path = "save_users")
-    public String saveUsers(@RequestBody List<DtoUpdateUserRequest> users)
+    public String saveUsers(@RequestBody List<RegisterRequest> users)
     {
         if(users.isEmpty())
         {
@@ -41,7 +42,7 @@ public class AuthenticationControllerImpl implements IAuthenticationController {
 
     @Override
     @GetMapping(path="get_user/{id}")
-    public DtoUpdateUserRequest getUser(@PathVariable Long id) {
+    public RegisterRequest getUser(@PathVariable Long id) {
         return AuthenticationService.getUserById(id);
     }
 
@@ -53,7 +54,7 @@ public class AuthenticationControllerImpl implements IAuthenticationController {
 
     @Override
     @PostMapping(path="auth/register")
-    public DtoUpdateUserRequest register(@RequestBody User user)
+    public RegisterResponse register(@RequestBody RegisterRequest user)
     {
         if(user == null)
         {

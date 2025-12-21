@@ -1,11 +1,12 @@
 package com.deuceng.moviedive.service;
 
-import com.deuceng.moviedive.dto.DtoUpdateUserRequest;
+import com.deuceng.moviedive.dto.RegisterRequest;
+import com.deuceng.moviedive.dto.RegisterResponse;
 import com.deuceng.moviedive.dto.UserResponseDto;
 
 public interface IProfileServices
 {
-    public UserResponseDto updateProfile(Long id, DtoUpdateUserRequest request);
-    public DtoUpdateUserRequest getUser(Long id);
-    public DtoUpdateUserRequest findByUsername(String name);
+    public RegisterResponse updateProfile(Long id, RegisterRequest request);
+    public RegisterRequest getUser(Long id);
+    public RegisterRequest findByUsername(String name);
 }

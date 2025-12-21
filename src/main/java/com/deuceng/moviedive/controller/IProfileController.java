@@ -1,6 +1,7 @@
 package com.deuceng.moviedive.controller;
 
-import com.deuceng.moviedive.dto.DtoUpdateUserRequest;
+import com.deuceng.moviedive.dto.RegisterRequest;
+import com.deuceng.moviedive.dto.RegisterResponse;
 import com.deuceng.moviedive.dto.UserResponseDto;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -8,8 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 public interface IProfileController
 {
-    public UserResponseDto updateUser(HttpSession session, @RequestBody DtoUpdateUserRequest request);
-    public DtoUpdateUserRequest getMe(HttpSession session);
-    public DtoUpdateUserRequest getUser(Long id);
-    public DtoUpdateUserRequest getUserByUsername(String name);
+    public RegisterResponse updateUser(HttpSession session, @RequestBody RegisterRequest request);
+    public RegisterRequest getMe(HttpSession session);
+    public RegisterRequest getUser(Long id);
+    public RegisterRequest getUserByUsername(String name);
 }

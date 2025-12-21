@@ -1,7 +1,8 @@
 package com.deuceng.moviedive.controller;
 
 
-import com.deuceng.moviedive.dto.DtoUpdateUserRequest;
+import com.deuceng.moviedive.dto.RegisterRequest;
+import com.deuceng.moviedive.dto.RegisterResponse;
 import com.deuceng.moviedive.dto.RequestLogin;
 import com.deuceng.moviedive.entity.User;
 import jakarta.servlet.http.HttpSession;
@@ -12,10 +13,10 @@ import java.util.List;
 
 
 public interface IAuthenticationController {
-    public String saveUsers(@RequestBody List<DtoUpdateUserRequest> users);
-    public DtoUpdateUserRequest getUser(@PathVariable Long id);
+    public String saveUsers(@RequestBody List<RegisterRequest> users);
+    public RegisterRequest getUser(@PathVariable Long id);
     List<User> getAllUsers();
-    public DtoUpdateUserRequest register(User user);
+    public RegisterResponse register(RegisterRequest user);
     public boolean login(@RequestBody RequestLogin request, HttpSession session);
     public User me(HttpSession session);
     public String logout(HttpSession session);

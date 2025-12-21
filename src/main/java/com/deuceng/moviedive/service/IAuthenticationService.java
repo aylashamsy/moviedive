@@ -1,25 +1,26 @@
 package com.deuceng.moviedive.service;
 
-import com.deuceng.moviedive.dto.DtoUser;
+import com.deuceng.moviedive.dto.RegisterRequest;
+import com.deuceng.moviedive.dto.RegisterResponse;
 import com.deuceng.moviedive.dto.RequestLogin;
 import com.deuceng.moviedive.entity.User;
 import com.deuceng.moviedive.exception.BaseException;
 import com.deuceng.moviedive.exception.ErrorMessage;
 import com.deuceng.moviedive.exception.MessageType;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-public interface IUserService {
+public interface IAuthenticationService {
 
-    DtoUser getUserById(Long id);
+    RegisterRequest getUserById(Long id);
     List<User> getAllUsers();
-    DtoUser register(User user);
-    String saveUsers(List<DtoUser> users);
-    public String login(RequestLogin request, HttpSession session);
+    RegisterResponse register(RegisterRequest dtoUser);
+    String saveUsers(List<RegisterRequest> users);
+    public boolean login(RequestLogin request, HttpSession session);
     public User me(HttpSession session);
     public String logout(HttpSession session);
+    public void deleteUser(Long id);
     private void requireAdmin(HttpSession session) {
         String role = (String) session.getAttribute("ROLE");
         if (role == null || !role.equals("ADMIN")) {
