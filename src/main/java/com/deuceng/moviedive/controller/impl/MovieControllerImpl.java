@@ -31,4 +31,12 @@ public class MovieControllerImpl implements IMovieController
         return movieService.findbyName(name);
     }
 
+    @Override
+    @GetMapping(path="getbyrandomid")
+    public MovieDto randomFind()
+    {
+        return movieService.randomFind();
+    }
+
+
 }

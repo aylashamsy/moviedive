@@ -7,4 +7,5 @@ public interface IMovieService
 {
     public MovieDto findbyid(Long id);
     public MovieDto findbyName(String name);
+    public MovieDto randomFind();
 }

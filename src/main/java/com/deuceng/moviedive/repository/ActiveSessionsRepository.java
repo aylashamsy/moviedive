@@ -16,6 +16,7 @@ public interface ActiveSessionsRepository extends JpaRepository<ActiveSession, S
     @Query(value = "SELECT s FROM ActiveSession s WHERE s.lastSeenAt > :cutoff ORDER BY s.lastSeenAt DESC", nativeQuery = true)
     List<ActiveSession> findOnlineSince(@Param("cutoff") LocalDateTime cutoff);
 
+    //Bu JPQL sorgusu SELECT değil, DB’yi değiştiriyor.
     @Modifying
     @Query("DELETE FROM ActiveSession s WHERE s.sessionId = :sessionId")
     int deleteBySessionId(@Param("sessionId") String sessionId);

@@ -1,34 +1,27 @@
 package com.deuceng.moviedive.service.impl;
 
-import com.deuceng.moviedive.dto.DtoUser;
+import com.deuceng.moviedive.dto.DtoUpdateUserRequest;
 import com.deuceng.moviedive.dto.RequestLogin;
 import com.deuceng.moviedive.entity.Role;
 import com.deuceng.moviedive.entity.User;
 import com.deuceng.moviedive.exception.BaseException;
 import com.deuceng.moviedive.exception.ErrorMessage;
 import com.deuceng.moviedive.exception.MessageType;
-import com.deuceng.moviedive.repository.ActiveSessionsRepository;
-import com.deuceng.moviedive.repository.LoginHistoryRepository;
 import com.deuceng.moviedive.repository.UserRepository;
 import com.deuceng.moviedive.service.IActiveSessionsService;
 import com.deuceng.moviedive.service.ILoginHistoryService;
-import com.deuceng.moviedive.service.IUserService;
+import com.deuceng.moviedive.service.IAuthenticationService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements IUserService {
+public class AuthenticationServiceImpl implements IAuthenticationService {
 
     @Autowired
     private UserRepository userRepository;
@@ -40,19 +33,19 @@ public class UserServiceImpl implements IUserService {
     private ILoginHistoryService loginHistoryService;
 
     @Override
-    public DtoUser getUserById(Long id) {
-        DtoUser dtoUser = new DtoUser();
+    public DtoUpdateUserRequest getUserById(Long id) {
+        DtoUpdateUserRequest dtoUpdateUserRequest = new DtoUpdateUserRequest();
         if(userRepository.existsById(id))
         {
-            User user=userRepository.findById(id).orElseThrow(() ->
+            User user= userRepository.findById(id).orElseThrow(() ->
                     new BaseException(new ErrorMessage(MessageType.NO_RECORD_EXIST," Kayıt bulunamadı",null)));
-            BeanUtils.copyProperties(user,dtoUser);
+            BeanUtils.copyProperties(user, dtoUpdateUserRequest);
         }
         else
         {
             throw new BaseException(new ErrorMessage(MessageType.NO_RECORD_EXIST,"Böyle bir kullanıcı yok",id));
         }
-        return dtoUser;
+        return dtoUpdateUserRequest;
     }
 
     @Override
@@ -61,7 +54,7 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public DtoUser register(User user)
+    public DtoUpdateUserRequest register(User user)
     {
         if(userRepository.findByEmail(user.getEmail()).isPresent())
         {
@@ -76,13 +69,14 @@ public class UserServiceImpl implements IUserService {
         }
 
         userRepository.save(user);
-        DtoUser DtoUser = new DtoUser();
-        BeanUtils.copyProperties(user,DtoUser);
-        return DtoUser;
+        DtoUpdateUserRequest DtoUpdateUserRequest = new DtoUpdateUserRequest();
+        BeanUtils.copyProperties(user, DtoUpdateUserRequest);
+        return DtoUpdateUserRequest;
     }
 
+    //Yardımcı method, tablo doldurmak için
     @Override
-    public String saveUsers(List<DtoUser> users) {
+    public String saveUsers(List<DtoUpdateUserRequest> users) {
 
         List<User> list = users.stream().map(dtoUser -> {
             User u = userRepository.findByEmail(dtoUser.getEmail())
@@ -98,7 +92,7 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public String login(RequestLogin request, HttpSession session)
+    public boolean login(RequestLogin request, HttpSession session)
     {
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() ->
                 new BaseException(new ErrorMessage(MessageType.NO_RECORD_EXIST," Kayıt bulunamadı",request.getEmail())));
@@ -112,7 +106,7 @@ public class UserServiceImpl implements IUserService {
         String sessionId = session.getId();
         loginHistoryService.recordLogin(user.getId(), sessionId);
         activeSessionService.upsertOnLogin(sessionId, user.getId());
-        return "login successful";
+        return true;
     }
 
     @Override
@@ -140,6 +134,12 @@ public class UserServiceImpl implements IUserService {
         //Session’ın TAMAMINI yok eder
         session.invalidate();
         return "logout successful";
+    }
+
+    public void deleteUser(Long id)
+    {
+        User user = userRepository.findById(id).orElseThrow(() -> new BaseException(new ErrorMessage(MessageType.NO_RECORD_EXIST," Kayıt bulunamadı",id)));
+        userRepository.delete(user);
     }
 
     private void requireAdmin(HttpSession session) {

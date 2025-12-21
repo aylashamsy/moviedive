@@ -54,7 +54,7 @@ public class GlobalExceptionHandler
     public ResponseEntity<ApiError> handleHibernateConstraintViolation(org.hibernate.exception.ConstraintViolationException ex, WebRequest request) {
         // constraint name çoğu zaman burada olur
         String constraint = ex.getConstraintName();
-        String friendly = "Constraint violated" + (constraint != null ? (": " + constraint) : ".");
+        String friendly = "Constraint violated. " + (constraint != null ? (": " + constraint) : ".");
         return ResponseEntity.badRequest().body(createApiError(friendly, request));
     }
 
@@ -76,7 +76,7 @@ public class GlobalExceptionHandler
     public ResponseEntity<ApiError> handleInvalidDataAccessApiUsage(InvalidDataAccessApiUsageException ex, WebRequest request) {
 
 
-        String friendly = "İstek işlenemedi: veritabanı işlemi hatalı kullanıldı.";
+        String friendly = "İstek işlenemedi: veritabanı işlemi hatalı kullanıldı. ";
 
         return ResponseEntity.badRequest().body(createApiError(friendly, request));
     }

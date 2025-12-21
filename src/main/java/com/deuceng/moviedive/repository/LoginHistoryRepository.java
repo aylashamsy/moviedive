@@ -24,6 +24,4 @@ public interface LoginHistoryRepository extends JpaRepository<LoginHistory, Long
       AND logout_at IS NULL
 """, nativeQuery = true)
     int markLogout(@Param("sessionId") String sessionId);
-
-
 }
