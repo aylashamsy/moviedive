@@ -1,5 +1,10 @@
 package com.deuceng.moviedive.service;
 
+import com.deuceng.moviedive.entity.Movie;
+import jakarta.transaction.Transactional;
+
+import java.util.List;
+
 public interface ITmdbService
 {
     void importPopularMoviesOnce();
@@ -28,4 +33,9 @@ public interface ITmdbService
             default -> "unknown";
         };
     }
+
+    void importTrendingMoviesOfWeekTop20();
+
+    @Transactional
+    List<Movie> trendingMoviesOfWeekTop20();
 }

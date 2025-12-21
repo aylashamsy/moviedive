@@ -1,24 +1,34 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import "../styles/AuthForms.css";
 
 function LoginForm({ onSuccess }) {
     const { login } = useAuth();
-    const [username, setUsername] = useState("");
+    const navigate = useNavigate();
+
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const ok = login(username, password);
+        if (!email || !password) {
+            setError("Please fill required fields.");
+            return;
+        }
+
+        const ok = await login(email, password); // ✅ async login
 
         if (!ok) {
-            setError("Wrong username or password");
-        } else {
-            setError("");
-            onSuccess && onSuccess(); // ✅ modal kapat
+            setError("Wrong email or password");
+            return;
         }
+
+        setError("");
+        onSuccess?.();          // modal kapatıyorsan
+        navigate("/");   // ✅ kendi sayfasına git
     };
 
     return (
@@ -26,12 +36,12 @@ function LoginForm({ onSuccess }) {
             <h2 className="auth-title">Log In</h2>
 
             <div className="auth-field">
-                <label>Username</label>
+                <label>Email</label>
                 <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="username"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@mail.com"
                 />
             </div>
 
@@ -41,7 +51,7 @@ function LoginForm({ onSuccess }) {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="password"
+                    placeholder="••••••••"
                 />
             </div>
 
@@ -50,10 +60,6 @@ function LoginForm({ onSuccess }) {
             <button className="auth-btn" type="submit">
                 Log In
             </button>
-
-            <div className="auth-hint">
-                Fake account: <b>ayla</b> / <b>1234</b>
-            </div>
         </form>
     );
 }

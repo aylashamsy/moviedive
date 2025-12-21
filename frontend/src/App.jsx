@@ -8,6 +8,7 @@ import EventDetail from "./pages/EventDetail";
 import NotFound from "./pages/NotFound";
 import AuthModal from "./components/AuthModal";
 import "./styles/Pages.css";
+import ProtectedRoute from "./context/ProtectedRoute";
 
 function App() {
     const location = useLocation();
@@ -23,7 +24,7 @@ function App() {
             <Navbar />
 
             {/* Sayfalar */}
-            <Routes>
+            <Routes element={<ProtectedRoute />}>
                 <Route path="/" element={<HomePage />} />
 
                 {/* Modals only routes (sayfa render etmez, sadece modal açar) */}
@@ -51,5 +52,4 @@ function App() {
         </>
     );
 }
-
 export default App;

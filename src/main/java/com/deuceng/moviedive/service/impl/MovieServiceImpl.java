@@ -28,11 +28,20 @@ public class MovieServiceImpl implements IMovieService {
     {
         Movie movie=movieRepository.findById(id).orElseThrow(() -> new BaseException(new ErrorMessage(MessageType.NO_RECORD_EXIST," Böyle bir film bulunamadı.",id)));
         MovieDto dtomovie=new MovieDto();
-        BeanUtils.copyProperties(movie,dtomovie);
 
+        BeanUtils.copyProperties(movie,dtomovie);
+        dtomovie.setPoster_url(movie.getPoster_path());
         for(int i=0;i<movie.getGenres().size();i++)
         {
             dtomovie.getGenre_names().add(movie.getGenres().get(i).getName());
+        }
+        for(int i=0;i<movie.getDirectors().size();i++)
+        {
+            dtomovie.getDirector_names().add(movie.getDirectors().get(i).getName());
+        }
+        for(int i=0;i<movie.getCastMembers().size();i++)
+        {
+            dtomovie.getActors().add(movie.getCastMembers().get(i).getName());
         }
         return dtomovie;
     }
@@ -46,8 +55,9 @@ public class MovieServiceImpl implements IMovieService {
         }
         Movie movie=movieRepository.findByTitle(name);
         MovieDto dtomovie=new MovieDto();
-        BeanUtils.copyProperties(movie,dtomovie);
 
+        BeanUtils.copyProperties(movie,dtomovie);
+        dtomovie.setPoster_url(movie.getPoster_path());
         for(int i=0;i<movie.getGenres().size();i++)
         {
             dtomovie.getGenre_names().add(movie.getGenres().get(i).getName());

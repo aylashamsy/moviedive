@@ -1,5 +1,6 @@
 package com.deuceng.moviedive.dto;
 
+import com.deuceng.moviedive.entity.City;
 import com.deuceng.moviedive.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,6 +17,6 @@ public class DtoUpdateUserRequest
     private String surname;
     private String email;
     private String phoneNumber;
-    private String address;
+    private Long cityId;
     private Role role;
 }
