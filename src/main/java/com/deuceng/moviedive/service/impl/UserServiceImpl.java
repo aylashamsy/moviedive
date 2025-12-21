@@ -1,14 +1,15 @@
 package com.deuceng.moviedive.service.impl;
 
 import com.deuceng.moviedive.dto.DtoUser;
+import com.deuceng.moviedive.dto.RegisterResponse;
 import com.deuceng.moviedive.dto.RequestLogin;
+import com.deuceng.moviedive.entity.City;
 import com.deuceng.moviedive.entity.Role;
 import com.deuceng.moviedive.entity.User;
 import com.deuceng.moviedive.exception.BaseException;
 import com.deuceng.moviedive.exception.ErrorMessage;
 import com.deuceng.moviedive.exception.MessageType;
-import com.deuceng.moviedive.repository.ActiveSessionsRepository;
-import com.deuceng.moviedive.repository.LoginHistoryRepository;
+import com.deuceng.moviedive.repository.CityRepository;
 import com.deuceng.moviedive.repository.UserRepository;
 import com.deuceng.moviedive.service.IActiveSessionsService;
 import com.deuceng.moviedive.service.ILoginHistoryService;
@@ -18,13 +19,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +34,8 @@ public class UserServiceImpl implements IUserService {
 
     @Autowired
     private ILoginHistoryService loginHistoryService;
+    @Autowired
+    private CityRepository cityRepository;
 
     @Override
     public DtoUser getUserById(Long id) {
@@ -60,42 +58,112 @@ public class UserServiceImpl implements IUserService {
         return userRepository.findAll();
     }
 
+
     @Override
-    public DtoUser register(User user)
-    {
-        if(userRepository.findByEmail(user.getEmail()).isPresent())
-        {
-            throw new BaseException(new ErrorMessage(MessageType.USER_ALREADY_EXISTS," Bu email zaten kullanılıyor ",user.getEmail()));
-        }
-        if(userRepository.findByUsername(user.getUsername()).isPresent())
-        {
-            throw new BaseException(new ErrorMessage(MessageType.USER_ALREADY_EXISTS," Bu username zaten kullanılıyor ",user.getUsername()));
-        }
-        if (user.getRole() == null) {
-            user.setRole(Role.USER); // default
+    public RegisterResponse register(DtoUser dtoUser) {
+
+        if (dtoUser == null) {
+            throw new BaseException(new ErrorMessage(
+                    MessageType.GENERAL_EXCEPTION,
+                    "Bir değer girmediniz",
+                    null
+            ));
         }
 
+        if (userRepository.findByEmail(dtoUser.getEmail()).isPresent()) {
+            throw new BaseException(new ErrorMessage(
+                    MessageType.USER_ALREADY_EXISTS,
+                    "Bu email zaten kullanılıyor",
+                    dtoUser.getEmail()
+            ));
+        }
+
+        if (userRepository.findByUsername(dtoUser.getUsername()).isPresent()) {
+            throw new BaseException(new ErrorMessage(
+                    MessageType.USER_ALREADY_EXISTS,
+                    "Bu username zaten kullanılıyor",
+                    dtoUser.getUsername()
+            ));
+        }
+
+        // ✅ cityId zorunlu (DTO'n böyle)
+        if (dtoUser.getCityId() == null) {
+            throw new BaseException(new ErrorMessage(
+                    MessageType.GENERAL_EXCEPTION,
+                    "City seçmelisiniz",
+                    dtoUser.getEmail()
+            ));
+        }
+
+        City city = cityRepository.findById(dtoUser.getCityId())
+                .orElseThrow(() -> new BaseException(
+                        new ErrorMessage(MessageType.GENERAL_EXCEPTION, "City bulunamadı", dtoUser.getCityId())
+                ));
+
+        User user = new User();
+        // cityId map olmaz, o yüzden hariç tut
+        BeanUtils.copyProperties(dtoUser, user, "cityId");
+
+        user.setCity(city);
+
+        // role default
+        user.setRole(dtoUser.getRole() == null ? Role.USER : dtoUser.getRole());
+
+        user.setPassword(dtoUser.getPassword());
+
         userRepository.save(user);
-        DtoUser DtoUser = new DtoUser();
-        BeanUtils.copyProperties(user,DtoUser);
-        return DtoUser;
+
+        // response
+        RegisterResponse response = new RegisterResponse();
+        BeanUtils.copyProperties(user, response);
+        response.setCityName(city.getName());
+
+        return response;
     }
+
+
 
     @Override
     public String saveUsers(List<DtoUser> users) {
 
         List<User> list = users.stream().map(dtoUser -> {
+
             User u = userRepository.findByEmail(dtoUser.getEmail())
-                    .orElseGet(User::new); // varsa id dolu gelir -> update
-            // DTO değerlerini her durumda kopyala (update için şart)
-            BeanUtils.copyProperties(dtoUser, u, "id");  // id'yi ezme
+                    .orElseGet(User::new);
+
+            // cityId zorunlu (DTO'n böyle)
+            if (dtoUser.getCityId() == null) {
+                throw new BaseException(new ErrorMessage(
+                        MessageType.GENERAL_EXCEPTION,
+                        "cityId boş olamaz",
+                        dtoUser.getEmail()
+                ));
+            }
+
+            City city = cityRepository.findById(dtoUser.getCityId())
+                    .orElseThrow(() -> new BaseException(
+                            new ErrorMessage(MessageType.GENERAL_EXCEPTION, "City bulunamadı", dtoUser.getCityId())
+                    ));
+
+            // önce kopyala (cityId/id hariç), sonra city set et
+            BeanUtils.copyProperties(dtoUser, u, "id", "cityId");
+            u.setCity(city);
+
+            // role default
+            u.setRole(dtoUser.getRole() == null ? Role.USER : dtoUser.getRole());
+
+            // password
             u.setPassword(dtoUser.getPassword());
+            // u.setPassword(passwordEncoder.encode(dtoUser.getPassword()));
+
             return u;
+
         }).toList();
 
         userRepository.saveAll(list);
         return "Toplu yükleme başarı ile sonuçlandı";
     }
+
 
     @Override
     public String login(RequestLogin request, HttpSession session)

@@ -14,8 +14,14 @@ function Navbar() {
     const goProfile = () => navigate("/profile");
     const goDashboard = () => navigate("/dashboard");
 
-    // modal açıkken butonları highlight yapmak istersen:
-    const isAuthRoute = location.pathname === "/login" || location.pathname === "/signup";
+    const isAuthRoute =
+        location.pathname === "/login" || location.pathname === "/signup";
+
+    // ✅ Logout + redirect
+    const handleLogout = async () => {
+        await logout();        // session + user state temizlenir
+        navigate("/");         // ✅ ana sayfa
+    };
 
     return (
         <header className="nav">
@@ -43,6 +49,7 @@ function Navbar() {
                             >
                                 Log in
                             </button>
+
                             <button className="nav-btn solid" onClick={openSignup}>
                                 Sign up
                             </button>
@@ -57,7 +64,7 @@ function Navbar() {
                                 <Avatar user={user} size={36} />
                             </button>
 
-                            <button className="nav-btn ghost" onClick={logout}>
+                            <button className="nav-btn ghost" onClick={handleLogout}>
                                 Logout
                             </button>
                         </div>

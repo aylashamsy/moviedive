@@ -2,6 +2,7 @@ package com.deuceng.moviedive.controller.impl;
 
 import com.deuceng.moviedive.controller.IUserController;
 import com.deuceng.moviedive.dto.DtoUser;
+import com.deuceng.moviedive.dto.RegisterResponse;
 import com.deuceng.moviedive.dto.RequestLogin;
 import com.deuceng.moviedive.entity.User;
 import com.deuceng.moviedive.exception.BaseException;
@@ -52,7 +53,7 @@ public class UserControllerImpl implements IUserController {
 
     @Override
     @PostMapping(path="auth/register")
-    public DtoUser register(@RequestBody User user)
+    public RegisterResponse register(@RequestBody DtoUser user)
     {
         if(user == null)
         {

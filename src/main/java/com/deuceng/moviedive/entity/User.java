@@ -40,8 +40,9 @@ public class User {
     @Column(nullable = false,length=11)
     private String phoneNumber;
 
-    @Column(nullable = false,length=100)
-    private String address;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "city_id")
+    private City city;
 
     @Column(nullable = false, length = 20)
     private Role role;

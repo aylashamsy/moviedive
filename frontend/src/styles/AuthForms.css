@@ -1,3 +1,7 @@
+/* =========================
+   AuthForms.css (FULL)
+   ========================= */
+
 .auth-title{
     margin: 0 0 14px;
     text-align: center;
@@ -6,6 +10,26 @@
     letter-spacing: 0.4px;
 }
 
+/* Eğer form container'ına .auth-form class'ı veriyorsan:
+   uzun formlarda kaydırma için */
+.auth-form{
+    max-height: min(78vh, 640px);
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+/* Scrollbar (opsiyonel) */
+.auth-form::-webkit-scrollbar{
+    width: 8px;
+}
+.auth-form::-webkit-scrollbar-thumb{
+    background: rgba(255,255,255,0.10);
+    border-radius: 999px;
+}
+
+/* =========================
+   Field blocks
+   ========================= */
 .auth-field{
     display: flex;
     flex-direction: column;
@@ -19,19 +43,81 @@
     font-weight: 700;
 }
 
-.auth-field input{
+/* =========================
+   Inputs / Textarea / Select (same look)
+   ========================= */
+.auth-field input,
+.auth-field textarea,
+.auth-field select{
+    width: 100%;
+    box-sizing: border-box;
+
     padding: 12px 12px;
     border-radius: 12px;
     border: 1px solid rgba(255,255,255,0.12);
     background: rgba(255,255,255,0.06);
     color: rgba(229,231,235,0.95);
     outline: none;
+    font-size: 14px;
 }
 
-.auth-field input::placeholder{
+/* Hepsi aynı yükseklik hissi versin */
+.auth-field input,
+.auth-field select{
+    height: 44px;
+}
+
+/* Textarea ayarları */
+.auth-field textarea{
+    min-height: 60px;
+    max-height: 100px;
+    resize: vertical;
+    padding: 10px 12px;
+}
+
+/* Placeholder rengi */
+.auth-field input::placeholder,
+.auth-field textarea::placeholder{
     color: rgba(229,231,235,0.45);
 }
 
+/* Focus */
+.auth-field input:focus,
+.auth-field textarea:focus,
+.auth-field select:focus{
+    border-color: rgba(255,255,255,0.28);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.06);
+}
+
+/* =========================
+   Select arrow styling
+   ========================= */
+.auth-field select{
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    padding-right: 36px;
+
+    background-image:
+            linear-gradient(45deg, transparent 50%, rgba(229,231,235,0.70) 50%),
+            linear-gradient(135deg, rgba(229,231,235,0.70) 50%, transparent 50%);
+    background-position:
+            calc(100% - 18px) calc(50% - 2px),
+            calc(100% - 12px) calc(50% - 2px);
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+}
+
+/* Dropdown option renkleri (browser'a göre değişebilir ama genelde iyi) */
+.auth-field select option{
+    background: #0b0f16;
+    color: rgba(229,231,235,0.95);
+}
+
+/* =========================
+   Error
+   ========================= */
 .auth-error{
     margin-top: 4px;
     margin-bottom: 10px;
@@ -41,6 +127,31 @@
     text-align: center;
 }
 
+/* =========================
+   First/Last Name row (FIX overflow)
+   ========================= */
+.auth-row{
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;     /* dar alanda alt alta düşsün */
+}
+
+.auth-row .auth-field{
+    flex: 1 1 0;
+    min-width: 0;        /* 🔥 overflow fix */
+}
+
+/* Mobil */
+@media (max-width: 520px){
+    .auth-row{
+        flex-direction: column;
+        gap: 0;
+    }
+}
+
+/* =========================
+   Buttons
+   ========================= */
 .auth-btn{
     margin-top: 10px;
     width: 100%;
@@ -75,8 +186,10 @@
     width: 100%;
     padding: 10px 0;
     border-radius: 999px;
+
     border: 1px solid rgba(255,255,255,0.14);
     background: rgba(255,255,255,0.06);
+
     color: rgba(229,231,235,0.92);
     font-weight: 800;
     cursor: pointer;
