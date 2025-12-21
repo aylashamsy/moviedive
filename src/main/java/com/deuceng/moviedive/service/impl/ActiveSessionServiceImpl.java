@@ -29,7 +29,7 @@ public class ActiveSessionServiceImpl implements IActiveSessionsService
         activeSessionRepository.save(s);
     }
 
-    // her request'te lastSeen güncelle
+    // her request'te lastSeen güncelle. Bu method içindeki DB işlemleri tek bir işlem olarak çalışsın.”
     @Transactional
     public void touch(String sessionId, Long userId) {
         LocalDateTime now = LocalDateTime.now();

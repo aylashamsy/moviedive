@@ -8,4 +8,5 @@ public interface IMovieController
 {
     public MovieDto findbyid(@PathVariable (name="id") long id);
     public MovieDto findbyName(@PathVariable (name="name") String name);
+    public MovieDto randomFind();
 }
