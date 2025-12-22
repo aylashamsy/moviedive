@@ -47,6 +47,7 @@ public class UserMovieStatusServiceImpl implements IUserMovieStatusService
         return liked_movie;
     }
 
+    @Transactional
     public void setLiked(Long user_id, Long movie_id)
     {
         UserMovieStatus userMovieStatus=userMovieStatusRepository.findByUser_IdAndMovie_Id(user_id, movie_id).orElseGet(() ->
@@ -61,12 +62,14 @@ public class UserMovieStatusServiceImpl implements IUserMovieStatusService
         userMovieStatusRepository.save(userMovieStatus);
     }
 
+    @Transactional
     public void setDisLiked(Long user_id, Long movie_id)
     {
         UserMovieStatus userMovieStatus=userMovieStatusRepository.findByUser_IdAndMovie_Id(user_id, movie_id).orElseThrow(() -> new BaseException(new ErrorMessage(MessageType.NO_RECORD_EXIST, " Bu film ile bu user'ın bir beğenme bağlantısı yok", movie_id)));
         userMovieStatus.setLiked(false);
         userMovieStatusRepository.save(userMovieStatus);
     }
+
 
     public String getRelationType(Long user_id, Long movie_id)
     {
