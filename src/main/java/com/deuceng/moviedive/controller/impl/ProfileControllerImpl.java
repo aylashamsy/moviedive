@@ -24,13 +24,13 @@ public class ProfileControllerImpl implements IProfileController
     }
 
     @GetMapping(path="get/me")
-    public RegisterRequest getMe(HttpSession session) {
+    public RegisterResponse getMe(HttpSession session) {
         Long id = (Long) session.getAttribute("USER_ID");
         return profileService.getUser(id);
     }
 
     @GetMapping(path="getuser/{user_id}")
-    public RegisterRequest getUser(@PathVariable (name="user_id") Long user_id)
+    public RegisterResponse getUser(@PathVariable (name="user_id") Long user_id)
     {
         return profileService.getUser(user_id);
     }

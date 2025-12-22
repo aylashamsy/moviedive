@@ -1,0 +1,111 @@
+/* Page */
+.up-page {
+    min-height: 100vh;
+    padding: 40px 0 60px;
+    display: flex;
+    justify-content: center;
+    background:
+            radial-gradient(1200px 600px at 30% 0%, rgba(180,60,120,0.22), transparent 60%),
+            linear-gradient(180deg, rgba(8,8,12,1), rgba(12,10,16,1));
+    color: rgba(229,231,235,0.95);
+}
+
+/* Card */
+.up-card {
+    width: min(780px, 92vw);
+    padding: 22px;
+    border-radius: 18px;
+    background: rgba(18,18,26,0.75);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px);
+}
+
+/* Headings */
+.up-title {
+    font-size: 28px;
+    font-weight: 900;
+    margin: 0;
+}
+
+.up-subtitle {
+    margin: 6px 0 18px;
+    opacity: 0.85;
+}
+
+/* Profile fields */
+.up-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 14px;
+    background: rgba(0,0,0,0.18);
+    border: 1px solid rgba(255,255,255,0.06);
+}
+
+.up-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+}
+
+.up-label {
+    width: 140px;
+    font-size: 13px;
+    font-weight: 700;
+    opacity: 0.75;
+}
+
+.up-value {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    word-break: break-word;
+}
+
+/* Buttons */
+.up-buttons {
+    margin-top: 18px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(229,231,235,0.95);
+    background: rgba(255,255,255,0.05);
+}
+
+.btn-primary {
+    background: linear-gradient(
+            180deg,
+            rgba(180,60,120,0.95),
+            rgba(140,40,95,0.95)
+    );
+}
+
+.btn-ghost {
+    background: rgba(255,255,255,0.03);
+}
+
+.btn-danger {
+    background: rgba(220,38,38,0.15);
+    border-color: rgba(220,38,38,0.35);
+}
+
+/* Error */
+.up-error {
+    color: #f87171;
+    text-align: center;
+}

@@ -50,15 +50,27 @@ public class ProfileServiceImpl implements IProfileServices {
         return dtoUpdateUserRequest;
     }
 
-    public RegisterRequest getUser(Long id) {
-        User user = userRepository.findById(id).
-                orElseThrow(() -> new BaseException(new ErrorMessage<>(MessageType.NO_RECORD_EXIST, " Böyle bir kullanıcı yok", id)));
+    public RegisterResponse getUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new BaseException(
+                        new ErrorMessage<>(MessageType.NO_RECORD_EXIST, "Böyle bir kullanıcı yok", id)
+                ));
 
-        RegisterRequest dtoUpdateUserRequest = new RegisterRequest();
-        BeanUtils.copyProperties(user, dtoUpdateUserRequest);
-        dtoUpdateUserRequest.setCityId(user.getCity().getId());
-        return dtoUpdateUserRequest;
+        RegisterResponse dto = new RegisterResponse();
+        BeanUtils.copyProperties(user, dto);
+
+        if (user.getCity() != null) {
+            dto.setCityName(user.getCity().getName());
+        } else {
+            dto.setCityName(null);
+            dto.setCityName(null);
+        }
+
+
+
+        return dto;
     }
+
 
     public RegisterRequest findByUsername(String name)
     {

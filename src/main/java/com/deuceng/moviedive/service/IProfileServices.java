@@ -7,6 +7,6 @@ import com.deuceng.moviedive.dto.UserResponseDto;
 public interface IProfileServices
 {
     public RegisterResponse updateProfile(Long id, RegisterRequest request);
-    public RegisterRequest getUser(Long id);
+    public RegisterResponse getUser(Long id);
     public RegisterRequest findByUsername(String name);
 }
