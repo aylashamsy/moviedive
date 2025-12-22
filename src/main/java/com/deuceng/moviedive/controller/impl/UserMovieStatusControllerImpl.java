@@ -36,10 +36,10 @@ public class UserMovieStatusControllerImpl implements IUserMovieStatusController
         return userMovieStatusService.getRelationType(user_id, movie_id);
     }
 
-    @GetMapping(path="getFavoriteMovie/{user_id}")
-    public List<DtoUserMovieStatus> getFavoriteMovies(@PathVariable(name="user_id") Long user_id)
+    @GetMapping(path="getLikedMovies/{user_id}")
+    public List<DtoUserMovieStatus> getLikedMovies(@PathVariable Long user_id)
     {
-        return userMovieStatusService.getFavoriteMovies(user_id);
+        return userMovieStatusService.getLikedMovies(user_id);
     }
 
     @GetMapping(path = "getWatchedMovie/{user_id}")
@@ -79,15 +79,7 @@ public class UserMovieStatusControllerImpl implements IUserMovieStatusController
         }
          userMovieStatusService.setWatchLater(user_id,movie_id);
     }
-    @PostMapping(path="setfavorite/relation_type/{movie_id}")
-    public void setFavorite(HttpSession session, @PathVariable(name="movie_id") Long movie_id)
-    {
-        Long user_id = (Long) session.getAttribute("USER_ID");
-        if (user_id == null) {
-            throw new BaseException(new ErrorMessage(MessageType.UNAUTHORIZED, " Giriş yapmalısınız", null));
-        }
-         userMovieStatusService.setFavorite(user_id,movie_id);
-    }
+
 
     @PostMapping(path="setdisliked/{movie_id}")
     public void setDisLiked(HttpSession session, @PathVariable(name="movie_id") Long movie_id)
@@ -109,15 +101,6 @@ public class UserMovieStatusControllerImpl implements IUserMovieStatusController
         userMovieStatusService.setLiked(user_id, movie_id);
     }
 
-    @DeleteMapping(path="deletefavorite/{movie_id}")
-    public void deleteFavorite(HttpSession session, @PathVariable(name="movie_id") Long movie_id)
-    {
-        Long user_id = (Long) session.getAttribute("USER_ID");
-        if (user_id == null) {
-            throw new BaseException(new ErrorMessage(MessageType.UNAUTHORIZED, " Giriş yapmalısınız", null));
-        }
-        userMovieStatusService.deleteFavorite(user_id,movie_id);
-    }
 
     @DeleteMapping(path="deletewatched/{movie_id}")
     public void deleteWatched(HttpSession session, @PathVariable(name="movie_id") Long movie_id)

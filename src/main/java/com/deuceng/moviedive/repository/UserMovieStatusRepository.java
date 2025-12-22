@@ -72,4 +72,17 @@ public interface UserMovieStatusRepository extends JpaRepository<UserMovieStatus
                          @Param("type") RelationTypeEnum type);
 
 
+    @Query("""
+    SELECT new com.deuceng.moviedive.dto.DtoUserMovieStatus(
+    ums.user,
+    ums.movie,
+    ums.liked,
+    ums.relation_type
+    )
+    FROM UserMovieStatus ums
+    WHERE ums.user.id = :userId
+     AND ums.liked = true
+    """)
+    List<DtoUserMovieStatus> findByUserIdandLiked(@Param("userId") Long userId);
+
 }

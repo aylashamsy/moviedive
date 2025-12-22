@@ -6,6 +6,5 @@ import lombok.Getter;
 public enum RelationTypeEnum
 {
     WATCHED,
-    LATER_WATCH,
-    FAVORITE;
+    LATER_WATCH;
 }

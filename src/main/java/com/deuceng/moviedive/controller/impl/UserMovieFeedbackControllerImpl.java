@@ -5,9 +5,11 @@ import com.deuceng.moviedive.dto.DtoUserMovieFeedback;
 import com.deuceng.moviedive.exception.BaseException;
 import com.deuceng.moviedive.exception.ErrorMessage;
 import com.deuceng.moviedive.exception.MessageType;
+import com.deuceng.moviedive.repository.CommentRepository;
 import com.deuceng.moviedive.service.IUserMovieFeedbackService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,7 +19,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserMovieFeedbackControllerImpl implements IUserMovieFeedbackController {
 
-    private final IUserMovieFeedbackService userMovieFeedbackService;
+    @Autowired
+    private IUserMovieFeedbackService userMovieFeedbackService;
+
+
 
     @Override
     @PostMapping("ratemovie/{movie_id}/{score}")
