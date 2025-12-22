@@ -21,4 +21,5 @@ public interface IAuthenticationController {
     public String logout(HttpSession session);
     public void deleteme(HttpSession session);
     public void deleteUser(HttpSession session, @PathVariable (name="id") Long id);
+    public DtoUpdateUserRequest getUserByUserName(@PathVariable (name="username")String username);
 }

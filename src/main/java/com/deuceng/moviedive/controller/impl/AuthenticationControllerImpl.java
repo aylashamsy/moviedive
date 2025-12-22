@@ -40,7 +40,7 @@ public class AuthenticationControllerImpl implements IAuthenticationController {
     }
 
     @Override
-    @GetMapping(path="get_user/{id}")
+    @GetMapping(path="getuserbyid/{id}")
     public DtoUpdateUserRequest getUser(@PathVariable Long id) {
         return AuthenticationService.getUserById(id);
     }
@@ -109,5 +109,11 @@ public class AuthenticationControllerImpl implements IAuthenticationController {
             throw new BaseException(new ErrorMessage(MessageType.UNAUTHORIZED, "Yetkisiz erişim", id));
         }
         AuthenticationService.deleteUser(id);
+    }
+
+    @Override
+    @GetMapping(path="getuserbyusername/{username}")
+    public DtoUpdateUserRequest getUserByUserName(@PathVariable (name="username")String username){
+        return AuthenticationService.getUserByUserName(username);
     }
 }

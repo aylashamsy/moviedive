@@ -20,7 +20,8 @@ public interface IAuthenticationService {
     public User me(HttpSession session);
     public String logout(HttpSession session);
     public void deleteUser(Long id);
-    private void requireAdmin(HttpSession session) {
+    public DtoUpdateUserRequest getUserByUserName(String username);
+        private void requireAdmin(HttpSession session) {
         String role = (String) session.getAttribute("ROLE");
         if (role == null || !role.equals("ADMIN")) {
             throw new BaseException(new ErrorMessage(MessageType.UNAUTHORIZED, "Admin required",role));

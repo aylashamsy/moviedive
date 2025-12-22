@@ -46,18 +46,4 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Role role;
-
-//    @ManyToMany
-//    @JoinTable(
-//            name = "user_follows",
-//            joinColumns = @JoinColumn(name = "user_id"),
-//            inverseJoinColumns = @JoinColumn(name = "follower_id")
-//    )
-//
-//    private Set<User> followers = new HashSet<>();
-//
-//    //cascade: User üzerinde yaptığın işlemleri MovieList’e de uygula
-//    //orphanRemoval: Listeden silinince DB’den de sil
-//    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private Set<MovieList> lists = new HashSet<>();
 }
