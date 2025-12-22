@@ -17,4 +17,6 @@ public interface MovieRepository extends JpaRepository<Movie, Long>
     Movie findByTitle(String name);
     Optional<Movie> findByTmdbId(Long tmdbId);
     List<Movie> findTop20ByOrderByIdAsc();
+    List<Movie> findByTitleContainingIgnoreCase(String title);
+
 }
