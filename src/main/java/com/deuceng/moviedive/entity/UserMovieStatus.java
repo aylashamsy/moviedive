@@ -28,6 +28,6 @@ public class UserMovieStatus
     private boolean liked;
 
     @Enumerated(EnumType.STRING)
-    @Column
+    @Column(nullable = true)
     private RelationTypeEnum relation_type;
 }

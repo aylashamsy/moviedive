@@ -147,6 +147,7 @@ public class IUserMovieFeedbackServiceImpl implements IUserMovieFeedbackService 
         {
             throw new BaseException(new ErrorMessage<>(MessageType.NO_RECORD_EXIST,"Böyle bir yorum yok", user_id));
         }
+        commentRepository.deleteById(comment_id);
     }
 
 
