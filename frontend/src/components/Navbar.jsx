@@ -107,9 +107,9 @@ function Navbar() {
         navigate(`/movie/${movieId}`);
     };
 
-    const onSelectUser = (userId) => {
+    const onSelectUser = (username) => {
         closeAndClear();
-        navigate(`/u/${userId}`); // ✅ public profile
+        navigate(`/profile/${username}`); // ✅ public profile
     };
     const hasAny = results.movies.length > 0 || results.users.length > 0;
 
@@ -197,11 +197,11 @@ function Navbar() {
 
                                         {results.users.map((u) => (
                                             <button
-                                                key={u.id}
+                                                key={u.username}
                                                 type="button"
                                                 className="searchItem"
                                                 onMouseDown={(e) => e.preventDefault()}
-                                                onClick={() => onSelectUser(u.id)}
+                                                onClick={() => onSelectUser(u.username)}
                                             >
                                                 <div className="searchAvatar">
                                                     {String(u.username || "?").charAt(0).toUpperCase()}

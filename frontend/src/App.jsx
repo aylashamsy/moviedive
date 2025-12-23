@@ -37,7 +37,7 @@ function App() {
                 <Route path="/profile" element={<UserProfile />} />
                 <Route path="/movie/:id" element={<MovieDetail />} />
                 <Route path="/event/:id" element={<EventDetail />} />
-                <Route path="/u/:userId" element={<UserPublicProfile />} />
+                <Route path="/profile/:username" element={<UserPublicProfile />} />
 
                 <Route path="*" element={<NotFound />} />
             </Routes>

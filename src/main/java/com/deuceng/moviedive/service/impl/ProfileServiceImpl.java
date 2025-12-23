@@ -1,6 +1,7 @@
 package com.deuceng.moviedive.service.impl;
 
 import com.deuceng.moviedive.dto.ChangePasswordRequest;
+import com.deuceng.moviedive.dto.PublicUserProfileDto;
 import com.deuceng.moviedive.dto.RegisterRequest;
 import com.deuceng.moviedive.dto.RegisterResponse;
 import com.deuceng.moviedive.entity.City;
@@ -72,14 +73,14 @@ public class ProfileServiceImpl implements IProfileServices {
     }
 
 
-    public RegisterRequest findByUsername(String name)
+    public PublicUserProfileDto findByUsername(String name)
     {
         User user = userRepository.findByUsername(name).
                 orElseThrow(() -> new BaseException(new ErrorMessage<>(MessageType.NO_RECORD_EXIST, " Böyle bir kullanıcı yok", name)));
-        RegisterRequest dtoUpdateUserRequest = new RegisterRequest();
-        BeanUtils.copyProperties(user, dtoUpdateUserRequest);
-        dtoUpdateUserRequest.setCityId(user.getCity().getId());
-        return dtoUpdateUserRequest;
+        PublicUserProfileDto PublicUserProfileDto = new PublicUserProfileDto();
+        BeanUtils.copyProperties(user, PublicUserProfileDto);
+        PublicUserProfileDto.setCityName(user.getCity().getName());
+        return PublicUserProfileDto;
     }
     @Override
     public RegisterResponse changePassword(Long id, ChangePasswordRequest request) {

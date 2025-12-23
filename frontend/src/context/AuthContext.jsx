@@ -1,31 +1,36 @@
-import {createContext, useContext, useEffect, useState} from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import {
     loginRequest,
     meRequest,
     logoutRequest,
-    registerRequest
+    registerRequest,
 } from "../api/auth.js";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
+    const [authLoading, setAuthLoading] = useState(true); // ✅ EKLENDİ
+
     useEffect(() => {
         const loadMe = async () => {
             try {
                 const res = await fetch(
-                    "http://localhost:8080/rest/api/movie_dive/users/auth/me", {
-                    credentials: "include",
-                });
+                    "http://localhost:8080/rest/api/movie_dive/users/auth/me",
+                    { credentials: "include" }
+                );
+
                 if (!res.ok) throw new Error("not logged in");
-                const user = await res.json();
-                setUser(user);
+
+                const me = await res.json();
+                setUser(me);
             } catch {
                 setUser(null);
             } finally {
-                setAuthLoading(false);
+                setAuthLoading(false); // ✅ artık tanımlı
             }
         };
+
         loadMe();
     }, []);
 
@@ -50,9 +55,9 @@ export function AuthProvider({ children }) {
     // SIGNUP + LOGIN
     const signupAndLogin = async (dtoUser) => {
         try {
-            await registerRequest(dtoUser);                     // 1) register
-            await loginRequest(dtoUser.email, dtoUser.password); // 2) login
-            const me = await meRequest();                       // 3) me
+            await registerRequest(dtoUser);                       // 1) register
+            await loginRequest(dtoUser.email, dtoUser.password);  // 2) login
+            const me = await meRequest();                         // 3) me
             setUser(me);
             return true;
         } catch (err) {
@@ -69,11 +74,8 @@ export function AuthProvider({ children }) {
     // LOGOUT
     const logout = async () => {
         try {
-            // backend session invalidate
-            await logoutRequest();
-
+            await logoutRequest(); // backend session invalidate
         } catch (err) {
-            // backend hata verse bile frontend logout olsun
             console.log("LOGOUT ERROR:", err?.message);
         }
 
@@ -81,13 +83,19 @@ export function AuthProvider({ children }) {
         return true;
     };
 
+    // ⛔ authLoading bitmeden app render olmasın
+    if (authLoading) {
+        return null; // veya spinner
+    }
+
     return (
         <AuthContext.Provider
             value={{
                 user,
+                authLoading,
                 login,
                 signupAndLogin,
-                logout
+                logout,
             }}
         >
             {children}

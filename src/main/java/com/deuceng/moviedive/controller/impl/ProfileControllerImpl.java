@@ -1,6 +1,7 @@
 package com.deuceng.moviedive.controller.impl;
 
 import com.deuceng.moviedive.controller.IProfileController;
+import com.deuceng.moviedive.dto.PublicUserProfileDto;
 import com.deuceng.moviedive.dto.RegisterRequest;
 import com.deuceng.moviedive.dto.RegisterResponse;
 import com.deuceng.moviedive.service.IProfileServices;
@@ -36,7 +37,7 @@ public class ProfileControllerImpl implements IProfileController
     }
 
     @GetMapping(path="getusername/{username}")
-    public RegisterRequest getUserByUsername(@PathVariable(name="username") String name)
+    public PublicUserProfileDto getUserByUsername(@PathVariable(name="username") String name)
     {
         return profileService.findByUsername(name);
     }

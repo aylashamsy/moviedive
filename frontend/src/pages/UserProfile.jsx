@@ -1,27 +1,99 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 import "../styles/UserProfile.css";
 
 export default function UserProfile() {
+    const navigate = useNavigate();
+
     const [me, setMe] = useState(null);
     const [form, setForm] = useState({});
     const [cities, setCities] = useState([]);
     const [isEditing, setIsEditing] = useState(false);
 
-    const [followersCount] = useState(0);
-    const [followingCount] = useState(0);
+    // ✅ counts
+    const [followersCount, setFollowersCount] = useState(0);
+    const [followingCount, setFollowingCount] = useState(0);
 
     // ✅ Change Password modal state
     const [isPwOpen, setIsPwOpen] = useState(false);
 
+    // ✅ followers/following modal
+    const [followModal, setFollowModal] = useState({
+        open: false,
+        mode: "followers", // "followers" | "following"
+    });
+    const [followList, setFollowList] = useState([]);
+    const [followLoading, setFollowLoading] = useState(false);
+    const [followError, setFollowError] = useState("");
+
+    const safeArray = (x) => (Array.isArray(x) ? x : []);
+
+    // ✅ follow list mapping (DtoGetAllFollow farklı olabilir)
+    const getFollowUsername = (x) =>
+        x?.username ??
+        x?.user?.username ??
+        x?.followed?.username ??
+        x?.follower?.username ??
+        x?.followedUsername ??
+        x?.followerUsername ??
+        x?.targetUsername ??
+        x?.sourceUsername ??
+        null;
+
+    const getFollowName = (x) => {
+        const fn =
+            x?.firstname ??
+            x?.user?.firstname ??
+            x?.followed?.firstname ??
+            x?.follower?.firstname ??
+            "";
+        const sn =
+            x?.surname ??
+            x?.user?.surname ??
+            x?.followed?.surname ??
+            x?.follower?.surname ??
+            "";
+        const name = `${fn} ${sn}`.trim();
+        return name || "";
+    };
+
+    const getFollowId = (x) =>
+        x?.id ??
+        x?.userId ??
+        x?.user?.id ??
+        x?.followed?.id ??
+        x?.follower?.id ??
+        x?.followedId ??
+        x?.followerId ??
+        null;
+
+    const fetchRelationCounts = async (userId) => {
+        try {
+            const [fCountRes, fgCountRes] = await Promise.all([
+                api.get(`/rest/api/movie_dive/relation/get/followercount/${userId}`),
+                api.get(`/rest/api/movie_dive/relation/get/followingcount/${userId}`),
+            ]);
+            setFollowersCount(Number(fCountRes.data ?? 0));
+            setFollowingCount(Number(fgCountRes.data ?? 0));
+        } catch {
+            setFollowersCount(0);
+            setFollowingCount(0);
+        }
+    };
+
     useEffect(() => {
         Promise.all([
-            api.get("/rest/api/movie_dive/profile/get/me"),
-            api.get("/rest/api/movie_dive/cities"),
+            api.get("/rest/api/movie_dive/users/auth/me"),
+           api.get("/rest/api/movie_dive/cities"),
         ]).then(([meRes, cityRes]) => {
-            setMe(meRes.data);
-            setForm(meRes.data);
-            setCities(cityRes.data);
+            const u = meRes.data;
+            setMe(u);
+            setForm(u);
+            setCities(safeArray(cityRes.data));
+
+            // ✅ counts for my profile
+            if (u?.id) fetchRelationCounts(u.id);
         });
     }, []);
 
@@ -36,7 +108,21 @@ export default function UserProfile() {
         return un || fn || "User";
     }, [form?.firstname, form?.username]);
 
-    const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+    const cityName = useMemo(() => {
+        const c =
+            form?.cityName ??
+            form?.city ??
+            form?.addressCity ??
+            form?.address ??
+            form?.location ??
+            form?.province ??
+            form?.il ??
+            "";
+        return (c || "").toString().trim();
+    }, [form]);
+
+    const handleChange = (e) =>
+        setForm({ ...form, [e.target.name]: e.target.value });
 
     const handleCityChange = (e) => {
         const newCityId = Number(e.target.value);
@@ -63,12 +149,44 @@ export default function UserProfile() {
         setMe(updated);
         setForm(updated);
         setIsEditing(false);
+
+        // ✅ update counts again (optional)
+        if (updated?.id) fetchRelationCounts(updated.id);
     };
 
     const handleCancel = () => {
         setForm(me);
         setIsEditing(false);
     };
+
+    // ✅ open followers/following modal
+    const openFollowModal = async (mode) => {
+        const myId = me?.id;
+        if (!myId) return;
+
+        setFollowModal({ open: true, mode });
+        setFollowList([]);
+        setFollowError("");
+        setFollowLoading(true);
+
+        try {
+            const url =
+                mode === "followers"
+                    ? `/rest/api/movie_dive/relation/get/followers/${myId}`
+                    : `/rest/api/movie_dive/relation/get/followings/${myId}`;
+
+            const res = await api.get(url);
+            setFollowList(safeArray(res.data));
+        } catch {
+            setFollowError("Liste yüklenemedi.");
+            setFollowList([]);
+        } finally {
+            setFollowLoading(false);
+        }
+    };
+
+    const closeFollowModal = () =>
+        setFollowModal((p) => ({ ...p, open: false }));
 
     if (!me) return null;
 
@@ -79,7 +197,9 @@ export default function UserProfile() {
                     <div>
                         <h2 className="up-title">My Profile</h2>
                         <p className="up-subtitle">
-                            {isEditing ? "You can update your information." : "Your information is displayed as read-only."}
+                            {isEditing
+                                ? "You can update your information."
+                                : "Your information is displayed as read-only."}
                         </p>
                     </div>
                 </div>
@@ -88,20 +208,54 @@ export default function UserProfile() {
                     {/* LEFT */}
                     <div className="up-left">
                         <div className="up-section">
-                            <ProfileField label="Username" value={form.username} name="username" editable={isEditing} onChange={handleChange} />
-                            <ProfileField label="First Name" value={form.firstname} name="firstname" editable={isEditing} onChange={handleChange} />
-                            <ProfileField label="Surname" value={form.surname} name="surname" editable={isEditing} onChange={handleChange} />
-                            <ProfileField label="Email" value={form.email} name="email" editable={isEditing} onChange={handleChange} />
-                            <ProfileField label="Phone Number" value={form.phoneNumber} name="phoneNumber" editable={isEditing} onChange={handleChange} />
+                            <ProfileField
+                                label="Username"
+                                value={form.username}
+                                name="username"
+                                editable={isEditing}
+                                onChange={handleChange}
+                            />
+                            <ProfileField
+                                label="First Name"
+                                value={form.firstname}
+                                name="firstname"
+                                editable={isEditing}
+                                onChange={handleChange}
+                            />
+                            <ProfileField
+                                label="Surname"
+                                value={form.surname}
+                                name="surname"
+                                editable={isEditing}
+                                onChange={handleChange}
+                            />
+                            <ProfileField
+                                label="Email"
+                                value={form.email}
+                                name="email"
+                                editable={isEditing}
+                                onChange={handleChange}
+                            />
+                            <ProfileField
+                                label="Phone Number"
+                                value={form.phoneNumber}
+                                name="phoneNumber"
+                                editable={isEditing}
+                                onChange={handleChange}
+                            />
 
                             <div className="up-row">
                                 <div className="up-label">City</div>
                                 <div className="up-value">
                                     {isEditing ? (
                                         <select value={form.cityId ?? ""} onChange={handleCityChange}>
-                                            <option value="" disabled>Select city</option>
+                                            <option value="" disabled>
+                                                Select city
+                                            </option>
                                             {cities.map((c) => (
-                                                <option key={c.id} value={c.id}>{c.name}</option>
+                                                <option key={c.id} value={c.id}>
+                                                    {c.name}
+                                                </option>
                                             ))}
                                         </select>
                                     ) : (
@@ -120,16 +274,29 @@ export default function UserProfile() {
                             </div>
 
                             <div className="up-name">{displayName}</div>
+                            {cityName && <div className="up-city">{cityName}</div>}
 
+                            {/* ✅ clickable followers/following */}
                             <div className="up-stats">
-                                <div className="up-stat">
+                                <button
+                                    className="up-stat up-statBtn"
+                                    type="button"
+                                    onClick={() => openFollowModal("followers")}
+                                    title="Show followers"
+                                >
                                     <div className="up-stat-number">{followersCount}</div>
                                     <div className="up-stat-label">Followers</div>
-                                </div>
-                                <div className="up-stat">
+                                </button>
+
+                                <button
+                                    className="up-stat up-statBtn"
+                                    type="button"
+                                    onClick={() => openFollowModal("following")}
+                                    title="Show following"
+                                >
                                     <div className="up-stat-number">{followingCount}</div>
                                     <div className="up-stat-label">Following</div>
-                                </div>
+                                </button>
                             </div>
 
                             <div className="up-side-buttons">
@@ -153,13 +320,31 @@ export default function UserProfile() {
                         </div>
                     </aside>
                 </div>
+
+                {/* ✅ followers/following modal */}
+                {followModal.open && (
+                    <FollowListModal
+                        title={followModal.mode === "followers" ? "Followers" : "Following"}
+                        loading={followLoading}
+                        error={followError}
+                        items={followList}
+                        onClose={closeFollowModal}
+                        getUsername={getFollowUsername}
+                        getName={getFollowName}
+                        getId={getFollowId}
+                        onOpenUser={(item) => {
+                            const un = getFollowUsername(item);
+                            if (un) {
+                                closeFollowModal();
+                                navigate(`/u/${encodeURIComponent(un)}`);
+                            }
+                        }}
+                    />
+                )}
             </div>
 
-            {/* ✅ MODAL */}
-            <ChangePasswordModal
-                open={isPwOpen}
-                onClose={() => setIsPwOpen(false)}
-            />
+            {/* ✅ CHANGE PASSWORD MODAL */}
+            <ChangePasswordModal open={isPwOpen} onClose={() => setIsPwOpen(false)} />
         </div>
     );
 }
@@ -211,24 +396,26 @@ function ChangePasswordModal({ open, onClose }) {
             setError("New passwords do not match.");
             return;
         }
-        if(newPassword ==null){
+        if (!newPassword) {
             setError("Enter your new password");
             return;
         }
 
         try {
+            setLoading(true);
             await api.put("/rest/api/movie_dive/profile/change-password", {
                 oldPassword,
                 newPassword,
-                confirmPassword: confirm
+                confirmPassword: confirm,
             });
             setOk("Password changed successfully.");
             onClose();
         } catch (err) {
             setError(err?.response?.data?.message || "Request failed.");
+        } finally {
+            setLoading(false);
         }
     };
-
 
     const stop = (e) => e.stopPropagation();
 
@@ -237,7 +424,9 @@ function ChangePasswordModal({ open, onClose }) {
             <div className="up-modal" onClick={stop} role="dialog" aria-modal="true">
                 <div className="up-modal-head">
                     <div className="up-modal-title">Change Password</div>
-                    <button className="up-modal-x" onClick={onClose} aria-label="Close">✕</button>
+                    <button className="up-modal-x" onClick={onClose} aria-label="Close">
+                        ✕
+                    </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="up-modal-body">
@@ -284,6 +473,64 @@ function ChangePasswordModal({ open, onClose }) {
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    );
+}
+
+/* =========================
+   FOLLOW LIST MODAL
+   ========================= */
+function FollowListModal({ title, loading, error, items, onClose, onOpenUser, getUsername, getName, getId }) {
+    const onBackdrop = (e) => {
+        if (e.target.classList.contains("flm-backdrop")) onClose();
+    };
+
+    return (
+        <div className="flm-backdrop" onMouseDown={onBackdrop} role="presentation">
+            <div className="flm-modal" role="dialog" aria-modal="true" aria-label={title}>
+                <div className="flm-head">
+                    <div className="flm-title">{title}</div>
+                    <button className="flm-x" type="button" onClick={onClose}>
+                        ✕
+                    </button>
+                </div>
+
+                <div className="flm-body">
+                    {loading && <div className="flm-muted">Loading...</div>}
+                    {!loading && error && <div className="flm-error">{error}</div>}
+
+                    {!loading && !error && items.length === 0 && (
+                        <div className="flm-muted">No users.</div>
+                    )}
+
+                    {!loading && !error && items.length > 0 && (
+                        <div className="flm-list">
+                            {items.map((x, idx) => {
+                                const un = getUsername(x) || "user";
+                                const name = getName(x);
+                                const id = getId(x);
+                                const initial = (un?.[0] ?? "U").toUpperCase();
+
+                                return (
+                                    <button
+                                        key={id ?? un ?? idx}
+                                        className="flm-item"
+                                        type="button"
+                                        onClick={() => onOpenUser(x)}
+                                    >
+                                        <div className="flm-avatar">{initial}</div>
+                                        <div className="flm-info">
+                                            <div className="flm-username">{un}</div>
+                                            {name && <div className="flm-name">{name}</div>}
+                                        </div>
+                                        <div className="flm-go">›</div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

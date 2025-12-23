@@ -21,7 +21,7 @@ public interface IAuthenticationService {
     public User me(HttpSession session);
     public String logout(HttpSession session);
     public void deleteUser(Long id);
-    public DtoUpdateUserRequest getUserByUserName(String username);
+    public RegisterResponse getUserByUserName(String username);
         private void requireAdmin(HttpSession session) {
         String role = (String) session.getAttribute("ROLE");
         if (role == null || !role.equals("ADMIN")) {

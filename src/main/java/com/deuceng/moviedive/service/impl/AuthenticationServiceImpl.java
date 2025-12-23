@@ -49,7 +49,6 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
             dtoUpdateUserRequest.setSurname(user.getSurname());
             dtoUpdateUserRequest.setEmail(user.getEmail());
             dtoUpdateUserRequest.setPhoneNumber(user.getPhoneNumber());
-            dtoUpdateUserRequest.setAddress(user.getAddress());
             dtoUpdateUserRequest.setRole(user.getRole());
         }
         else
@@ -60,18 +59,16 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
     }
 
     @Override
-    public DtoUpdateUserRequest getUserByUserName(String username) {
-        DtoUpdateUserRequest dtoUpdateUserRequest = new DtoUpdateUserRequest();
+    public RegisterResponse getUserByUserName(String username) {
+        RegisterResponse dtoUpdateUserRequest = new RegisterResponse();
         if(userRepository.existsByUsername(username))
         {
             User user= userRepository.findByUsername(username).orElseThrow(() -> new BaseException(new ErrorMessage(MessageType.NO_RECORD_EXIST," Kayıt bulunamadı",null)));
             dtoUpdateUserRequest.setUsername(user.getUsername());
-            dtoUpdateUserRequest.setPassword(user.getPassword());
             dtoUpdateUserRequest.setFirstname(user.getFirstname());
             dtoUpdateUserRequest.setSurname(user.getSurname());
             dtoUpdateUserRequest.setEmail(user.getEmail());
             dtoUpdateUserRequest.setPhoneNumber(user.getPhoneNumber());
-            dtoUpdateUserRequest.setAddress(user.getAddress());
             dtoUpdateUserRequest.setRole(user.getRole());
         }
         else
