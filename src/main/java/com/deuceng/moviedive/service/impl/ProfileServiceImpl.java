@@ -5,6 +5,7 @@ import com.deuceng.moviedive.dto.PublicUserProfileDto;
 import com.deuceng.moviedive.dto.RegisterRequest;
 import com.deuceng.moviedive.dto.RegisterResponse;
 import com.deuceng.moviedive.entity.City;
+import com.deuceng.moviedive.entity.Role;
 import com.deuceng.moviedive.entity.User;
 import com.deuceng.moviedive.exception.BaseException;
 import com.deuceng.moviedive.exception.ErrorMessage;
@@ -12,6 +13,7 @@ import com.deuceng.moviedive.exception.MessageType;
 import com.deuceng.moviedive.repository.CityRepository;
 import com.deuceng.moviedive.repository.UserRepository;
 import com.deuceng.moviedive.service.IProfileServices;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -133,4 +135,58 @@ public class ProfileServiceImpl implements IProfileServices {
 
         return dto;
     }
+    public RegisterResponse upgradeToVip(Long id, RegisterRequest req) {
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new BaseException(
+                        new ErrorMessage<>(MessageType.NO_RECORD_EXIST,
+                                "Böyle bir kullanıcı yok", id)
+                ));
+
+        // 2) body kontrol
+        if (req == null || req.getEmail() == null || req.getPassword() == null) {
+            throw new BaseException(
+                    new ErrorMessage<>(MessageType.GENERAL_EXCEPTION,
+                            "Email ve şifre zorunludur", null)
+            );
+        }
+
+        // 3) session’daki user’ı DB’den çek
+        userRepository.findById(id).orElseThrow(() ->
+                new BaseException(new ErrorMessage<>(MessageType.NO_RECORD_EXIST,
+                        "Böyle bir kullanıcı yok", id))
+        );
+
+        // 4) email match (başkasını VIP yapmaya çalışmasın)
+        if (user.getEmail() == null || !user.getEmail().equalsIgnoreCase(req.getEmail().trim())) {
+            throw new BaseException(
+                    new ErrorMessage<>(MessageType.UNAUTHORIZED,
+                            "Email, giriş yapan kullanıcı ile uyuşmuyor", null)
+            );
+        }
+
+        // 5) password kontrol (senin sistem: plain text)
+        if (user.getPassword() == null || !user.getPassword().equals(req.getPassword())) {
+            throw new BaseException(
+                    new ErrorMessage<>(MessageType.GENERAL_EXCEPTION,
+                            "Şifre yanlış", null)
+            );
+        }
+
+        // 6) VIP'e yükselt
+        // Role enum ise: user.setRole(Role.VIP);
+        // Role String ise:
+        user.setRole(Role.VIP);
+
+        userRepository.save(user);
+
+        // 7) response dön
+        RegisterResponse dto = new RegisterResponse();
+        BeanUtils.copyProperties(user, dto);
+        if (user.getCity() != null) {
+            dto.setCityName(user.getCity().getName());
+        }
+        return dto;
+    }
+
 }

@@ -10,7 +10,8 @@ import AuthModal from "./components/AuthModal";
 import "./styles/Pages.css";
 import ProtectedRoute from "./context/ProtectedRoute";
 import UserPublicProfile  from "./pages/UserPublicProfile.jsx";
-
+import EventCreate  from "./pages/EventCreate.jsx";
+import AllEvents from "./pages/AllEvents.jsx";
 function App() {
     const location = useLocation();
     const navigate = useNavigate();
@@ -36,9 +37,10 @@ function App() {
                 <Route path="/dashboard" element={<UserDashboard />} />
                 <Route path="/profile" element={<UserProfile />} />
                 <Route path="/movie/:id" element={<MovieDetail />} />
-                <Route path="/event/:id" element={<EventDetail />} />
+                <Route path="/eventdetail/:id" element={<EventDetail />} />
                 <Route path="/profile/:username" element={<UserPublicProfile />} />
-
+                <Route path="/events/create" element={<EventCreate />} />
+                <Route path="/allevents" element={<AllEvents />} />
                 <Route path="*" element={<NotFound />} />
             </Routes>
 

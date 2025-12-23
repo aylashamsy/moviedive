@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 public class MovieDto {
     @JsonProperty("id")
-    private Long Id;            // TMDB id
+    private Long Id;
     private String title;
     private String vote_count;
     private String overview;

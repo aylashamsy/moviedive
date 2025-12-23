@@ -14,7 +14,7 @@ public class SearchControllerImpl implements ISearchController {
     private final ISearchService searchService;
 
     @Override
-    @GetMapping
+    @GetMapping(path ="/search-by-name")
     public SearchResponse search(@RequestParam(name = "q") String q) {
         return searchService.search(q);
     }

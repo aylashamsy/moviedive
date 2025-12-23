@@ -49,5 +49,11 @@ public class ProfileControllerImpl implements IProfileController
         Long id = (Long) session.getAttribute("USER_ID");
         return profileService.changePassword(id, request);
     }
+    @PostMapping("/get-vip")
+    public RegisterResponse getVip(HttpSession session,
+                               @RequestBody RegisterRequest req) {
+        Long id = (Long) session.getAttribute("USER_ID");
+        return profileService.upgradeToVip(id, req);
+    }
 
 }

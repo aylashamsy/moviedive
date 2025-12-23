@@ -13,9 +13,6 @@ public class EventCreateRequest {
     private String description;
     private String locationName;
     private Long cityId;
-
-
     private Long movieId;
-
     private String eventDateTime;
 }

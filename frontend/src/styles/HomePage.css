@@ -271,6 +271,28 @@
     transform: translateY(-2px);
     box-shadow: 0 16px 44px rgba(0,0,0,0.45);
 }
+/* Section title clickable */
+.hp-sectionTitleWrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.hp-sectionTitleClickable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.hp-sectionTitleClickable:hover .hp-sectionTitle {
+    text-decoration: underline;
+}
+
+.hp-sectionArrow {
+    font-size: 22px;
+    line-height: 1;
+    opacity: 0.8;
+    transform: translateY(-1px);
+}
 
 /* Small screens */
 @media (max-width: 980px){

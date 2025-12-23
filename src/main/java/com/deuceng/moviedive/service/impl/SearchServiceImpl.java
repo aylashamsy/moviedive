@@ -49,7 +49,7 @@ public class SearchServiceImpl implements ISearchService {
     private MovieDto toMovieDto(Movie movie) {
         MovieDto dto = new MovieDto();
 
-        dto.setTmdbId(movie.getTmdbId());
+        dto.setId(movie.getId());
 
         dto.setTitle(movie.getTitle());
         dto.setOverview(movie.getOverview());

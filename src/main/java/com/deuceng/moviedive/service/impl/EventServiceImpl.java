@@ -96,7 +96,8 @@ public class EventServiceImpl implements IEventService {
     @Override
     public EventResponse getEventDetail(Long id) {
         Event event = eventRepository.findById(id).orElseThrow(() ->
-                new BaseException(new ErrorMessage(MessageType.NO_RECORD_EXIST, "Event bulunamadı", id)));
+                new BaseException(new ErrorMessage(MessageType.NO_RECORD_EXIST,
+                        "Event bulunamadı", id)));
         return toResponse(event);
     }
 
@@ -144,7 +145,7 @@ public class EventServiceImpl implements IEventService {
         r.setTitle(event.getTitle());
         r.setDescription(event.getDescription());
         r.setLocationName(event.getLocationName());
-
+        r.setPoster_path(event.getConceptMovie().getPoster_path());
         if (event.getCity() != null) {
             r.setCityId(event.getCity().getId());
             r.setCityName(event.getCity().getName());
@@ -241,6 +242,57 @@ public class EventServiceImpl implements IEventService {
 
         Event saved = eventRepository.save(event);
         return toResponse(saved);
+    }
+    @Override
+    public List<EventResponse> getMyRegisteredEvents(HttpSession session) {
+
+        Long userId = (Long) session.getAttribute("USER_ID");
+
+        if (userId == null) {
+            // sen BaseException kullanıyorsan burada onu fırlat
+            throw new RuntimeException("Login first");
+        }
+
+        // (opsiyonel) user var mı doğrula
+        userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        var regs = eventRegistrationRepository.findAllByUserIdWithEvent(userId);
+
+        return regs.stream().map(er -> {
+            var e = er.getEvent();
+
+            Long cityId = (e.getCity() != null) ? e.getCity().getId() : null;
+            String cityName = (e.getCity() != null) ? e.getCity().getName() : null;
+
+            Long movieId = (e.getConceptMovie() != null) ? e.getConceptMovie().getId() : null;
+            String movieTitle = (e.getConceptMovie() != null) ? e.getConceptMovie().getTitle() : null;
+
+            // ✅ senin dto alanın: poster_path
+            String posterPath = null;
+            if (e.getConceptMovie() != null) {
+                // Movie entity alanın neyse ona göre düzelt:
+                posterPath = e.getConceptMovie().getPoster_path(); // veya getPosterPath()
+            }
+
+            Long createdByUserId = (e.getCreatedBy() != null) ? e.getCreatedBy().getId() : null;
+            String createdByUsername = (e.getCreatedBy() != null) ? e.getCreatedBy().getUsername() : null;
+            long regCount = eventRegistrationRepository.countByEvent_Id(e.getId());
+            return new EventResponse(
+                    e.getId(),
+                    e.getTitle(),
+                    e.getDescription(),
+                    e.getLocationName(),
+                    cityId,
+                    cityName,
+                    movieId,
+                    movieTitle,
+                    posterPath,
+                    e.getEventDateTime() != null ? e.getEventDateTime().toString() : null,
+                    createdByUserId,
+                    createdByUsername,
+                    regCount
+            );
+        }).toList();
     }
 
 }

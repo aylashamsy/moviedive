@@ -6,27 +6,17 @@ import "../styles/UserDashboard.css";
 export default function UserDashboard() {
     const navigate = useNavigate();
 
-    // Dummy events
-    const events = useMemo(
-        () =>
-            Array.from({ length: 10 }).map((_, i) => ({
-                id: i + 1,
-                title: `Event #${i + 1}`,
-                date: `2025-01-${String((i % 28) + 1).padStart(2, "0")}`,
-                city: ["İzmir", "İstanbul", "Ankara", "Bursa"][i % 4],
-                desc: "Short event description goes here.",
-                cover: `https://picsum.photos/seed/dash-event-${i + 1}/900/600`,
-            })),
-        []
-    );
-
     const [me, setMe] = useState(null);
     const [userId, setUserId] = useState(null);
 
-    // Bunlar artık DtoUserMovieStatus listesi:
-    const [favorites, setFavorites] = useState([]); // liked
-    const [watched, setWatched] = useState([]);     // relation_type = WATCHED
-    const [later, setLater] = useState([]);         // relation_type = LATER_WATCH
+    // ✅ user lists
+    const [favorites, setFavorites] = useState([]);
+    const [watched, setWatched] = useState([]);
+    const [later, setLater] = useState([]);
+
+    // ✅ registered events
+    const [registeredEvents, setRegisteredEvents] = useState([]);
+    const [eventsLoading, setEventsLoading] = useState(false);
 
     const [loading, setLoading] = useState({
         me: true,
@@ -44,12 +34,21 @@ export default function UserDashboard() {
 
     const toggle = (key) => setOpen((p) => ({ ...p, [key]: !p[key] }));
 
-    // Backend boş liste için exception atıyor -> bunu empty kabul edeceğiz
+    // ✅ Backend bazen exception atıyor -> empty kabul ediyoruz
     const safeGetList = async (url) => {
         try {
-            const res = await api.get(url);
+            const res = await api.get(url, { withCredentials: true });
             return Array.isArray(res.data) ? res.data : [];
         } catch (e) {
+            // Login first / 401 / 403 -> boş liste gibi davran
+            const msg = String(e?.response?.data?.message || e?.message || "");
+            if (
+                e?.response?.status === 401 ||
+                e?.response?.status === 403 ||
+                msg.toLowerCase().includes("login")
+            ) {
+                return [];
+            }
             return [];
         }
     };
@@ -58,11 +57,13 @@ export default function UserDashboard() {
     useEffect(() => {
         const run = async () => {
             try {
-                const res = await api.get("rest/api/movie_dive/users/auth/me");
+                const res = await api.get("rest/api/movie_dive/users/auth/me", {
+                    withCredentials: true,
+                });
                 setMe(res.data);
 
-                // ⚠️ burada id şart:
-                const id = res.data?.id; // RegisterResponse içine id eklenmeli
+                // ⚠️ id şart:
+                const id = res.data?.id;
                 setUserId(id ?? null);
             } catch (e) {
                 console.error("get/me failed", e);
@@ -98,6 +99,22 @@ export default function UserDashboard() {
         run();
     }, [userId]);
 
+    // ✅ 3) Registered events çek (events rail açılınca)
+    const EVENTS_API = "/rest/api/movie_dive/events/my-registered"; // <-- endpoint'in buysa
+
+    useEffect(() => {
+        if (!open.events) return;
+
+        const run = async () => {
+            setEventsLoading(true);
+            const list = await safeGetList(EVENTS_API);
+            setRegisteredEvents(list);
+            setEventsLoading(false);
+        };
+
+        run();
+    }, [open.events]);
+
     // Kart click -> movie detail
     const openMovie = (dto) => {
         const movieId = dto?.movie?.id;
@@ -105,28 +122,42 @@ export default function UserDashboard() {
         navigate(`/movie/${movieId}`);
     };
 
+    // ✅ Event click -> event detail
+    const openEvent = (ev) => {
+        const eventId = ev?.id;
+        if (!eventId) return;
+        navigate(`/eventdetail/${eventId}`);
+    };
+
     return (
         <div className="ud">
             <div className="ud-container">
                 <header className="ud-hero">
                     <h1 className="ud-h1">Dashboard</h1>
-                    <p className="ud-sub">Quick access to your lists and upcoming events.</p>
+                    <p className="ud-sub">Quick access to your lists and registered events.</p>
                 </header>
 
+                {/* ✅ EVENTS = registered events */}
                 <DashboardSection
-                    title="Events"
-                    subtitle="Upcoming events near you"
+                    title="My Events"
+                    subtitle={eventsLoading ? "Loading..." : "Events you registered to"}
                     isOpen={open.events}
                     onToggle={() => toggle("events")}
+                    emptyText="You haven't registered to any event yet."
+                    empty={!eventsLoading && registeredEvents.length === 0}
                 >
                     <PosterRail
-                        items={events}
+                        items={registeredEvents}
                         type="event"
-                        getImage={(e) => e.cover}
-                        getTitle={(e) => e.title}
-                        getYear={(e) => ""}
+                        getImage={(e) => e?.poster_path || e?.posterPath || ""} // DTO'dan
+                        getTitle={(e) => e?.title}
+                        getYear={(e) => ""} // event'te year yok
                         getRating={() => null}
-                        onOpen={() => {}}
+                        onOpen={openEvent}
+                        // event ekstra alanlar
+                        getCity={(e) => e?.cityName}
+                        getDate={(e) => (e?.eventDateTime ? String(e.eventDateTime).split("T")[0] : "")}
+                        getDesc={(e) => e?.description}
                     />
                 </DashboardSection>
 
@@ -202,17 +233,25 @@ function DashboardSection({ title, subtitle, isOpen, onToggle, children, empty, 
                 <div className="ud-box-arrow">{isOpen ? "˅" : "›"}</div>
             </button>
 
-            {isOpen && (
-                <div className="ud-railArea">
-                    {empty ? <div className="ud-empty">{emptyText}</div> : children}
-                </div>
-            )}
+            {isOpen && <div className="ud-railArea">{empty ? <div className="ud-empty">{emptyText}</div> : children}</div>}
         </section>
     );
 }
 
 /* 4 kart kaydırmalı rail */
-function PosterRail({ items, type, getImage, getTitle, getYear, getRating, onOpen }) {
+function PosterRail({
+                        items,
+                        type,
+                        getImage,
+                        getTitle,
+                        getYear,
+                        getRating,
+                        onOpen,
+                        // event extras
+                        getCity,
+                        getDate,
+                        getDesc,
+                    }) {
     const railRef = useRef(null);
 
     const scrollBy4 = (dir) => {
@@ -229,6 +268,12 @@ function PosterRail({ items, type, getImage, getTitle, getYear, getRating, onOpe
         el.scrollBy({ left: dir * step, behavior: "smooth" });
     };
 
+    const safeText = (s, n = 70) => {
+        const t = String(s || "").trim();
+        if (!t) return "";
+        return t.length > n ? t.slice(0, n) + "…" : t;
+    };
+
     return (
         <div className="ud-railWrap">
             <button className="ud-arrow ud-arrowLeft" onClick={() => scrollBy4(-1)} type="button">
@@ -236,32 +281,46 @@ function PosterRail({ items, type, getImage, getTitle, getYear, getRating, onOpe
             </button>
 
             <div ref={railRef} className="ud-rail">
-                {items.map((item, idx) => (
-                    <div
-                        key={(type === "movie" ? item?.movie?.id : item?.id) ?? idx}
-                        className="ud-card"
-                        style={{ backgroundImage: `url("${getImage(item) || ""}")` }}
-                    >
-                        <div className="ud-cardInner">
-                            <div className="ud-cardTop">
-                                <div className="ud-badge">{getYear(item) || (type === "event" ? item.city : "")}</div>
-                                <div className="ud-muted">{type === "event" ? item.date : ""}</div>
+                {items.map((item, idx) => {
+                    const key = (type === "movie" ? item?.movie?.id : item?.id) ?? idx;
+
+                    const bg = getImage(item) || "";
+                    const title = getTitle(item) || (type === "event" ? "Event" : "Movie");
+
+                    const badgeLeft =
+                        type === "movie" ? getYear(item) || "" : (getCity?.(item) || "");
+
+                    const badgeRight =
+                        type === "event" ? (getDate?.(item) || "") : "";
+
+                    const desc =
+                        type === "movie"
+                            ? `⭐ Rating: ${Number(getRating(item) ?? 0).toFixed(1)}`
+                            : safeText(getDesc?.(item) || item?.description || "");
+
+                    return (
+                        <div
+                            key={key}
+                            className="ud-card"
+                            style={{ backgroundImage: bg ? `url("${bg}")` : "none" }}
+                        >
+                            <div className="ud-cardInner">
+                                <div className="ud-cardTop">
+                                    <div className="ud-badge">{badgeLeft}</div>
+                                    <div className="ud-muted">{badgeRight}</div>
+                                </div>
+
+                                <div className="ud-cardTitle">{title}</div>
+
+                                <div className="ud-cardDesc">{desc}</div>
+
+                                <button className="ud-cta" onClick={() => onOpen(item)} type="button">
+                                    Open
+                                </button>
                             </div>
-
-                            <div className="ud-cardTitle">{getTitle(item) || "Movie"}</div>
-
-                            <div className="ud-cardDesc">
-                                {type === "movie"
-                                    ? `⭐ Rating: ${Number(getRating(item) ?? 0).toFixed(1)}`
-                                    : item.desc}
-                            </div>
-
-                            <button className="ud-cta" onClick={() => onOpen(item)} type="button">
-                                Open
-                            </button>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             <button className="ud-arrow ud-arrowRight" onClick={() => scrollBy4(1)} type="button">

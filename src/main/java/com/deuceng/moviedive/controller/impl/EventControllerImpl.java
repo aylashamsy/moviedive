@@ -20,41 +20,45 @@ public class EventControllerImpl implements IEventController {
     private final IEventService eventService;
 
     @Override
-    @PostMapping
+    @PostMapping(path ="/create")
     public EventResponse create(@RequestBody EventCreateRequest request, HttpSession session) {
         return eventService.createEvent(request, session);
     }
 
     @Override
-    @GetMapping
+    @GetMapping(path ="/upcoming")
     public List<EventResponse> listUpcoming() {
         return eventService.listUpcomingEvents();
     }
 
     @Override
-    @GetMapping(path = "{id}")
+    @GetMapping(path = "/getevent/{id}")
     public EventResponse get(@PathVariable(name = "id") Long id) {
         return eventService.getEventDetail(id);
     }
 
     @Override
-    @PostMapping(path = "{id}/register")
+    @PostMapping(path = "/register/{id}")
     public String register(@PathVariable(name = "id") Long id, HttpSession session) {
         return eventService.registerToEvent(id, session);
     }
 
     @Override
-    @GetMapping(path = "{eventId}/participants")
+    @GetMapping(path = "/participants/{eventId}")
     public List<EventParticipantDto> participants(@PathVariable(name="eventId") Long eventId) {
         return eventService.getEventParticipants(eventId);
     }
 
     @Override
-    @PutMapping(path = "{id}")
+    @PutMapping(path = "/update-event/{id}")
     public EventResponse update(@PathVariable(name = "id") Long id,
                                 @RequestBody EventUpdateRequest request,
                                 HttpSession session) {
         return eventService.updateEvent(id, request, session);
+    }
+    @GetMapping("/my-registered")
+    public List<EventResponse> myRegistered(HttpSession session) {
+        return eventService.getMyRegisteredEvents(session);
     }
 
 }

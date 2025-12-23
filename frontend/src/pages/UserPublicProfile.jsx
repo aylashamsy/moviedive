@@ -9,13 +9,15 @@ export default function UserPublicProfile() {
 
     const [user, setUser] = useState(null);
 
-    // ✅ logged-in user info
+    // ✅ logged-in user
     const [me, setMe] = useState(null);
     const meId = me?.id ?? null;
 
+    // ✅ relation state
     const [followersCount, setFollowersCount] = useState(0);
     const [followingCount, setFollowingCount] = useState(0);
     const [isFollowing, setIsFollowing] = useState(false);
+    const [followActionLoading, setFollowActionLoading] = useState(false);
 
     // ✅ followers/following modal
     const [followModal, setFollowModal] = useState({
@@ -26,7 +28,7 @@ export default function UserPublicProfile() {
     const [followLoading, setFollowLoading] = useState(false);
     const [followError, setFollowError] = useState("");
 
-    // rails open/close
+    // ✅ rails open/close
     const [open, setOpen] = useState({
         events: false,
         favorites: false,
@@ -34,6 +36,7 @@ export default function UserPublicProfile() {
         later: false,
     });
 
+    // ✅ lists
     const [events, setEvents] = useState([]);
     const [favorites, setFavorites] = useState([]);
     const [watched, setWatched] = useState([]);
@@ -57,7 +60,7 @@ export default function UserPublicProfile() {
         }
     };
 
-    // ✅ session’dan “me” çek (DOĞRU YER: auth/me)
+    // ✅ session’dan “me” çek
     useEffect(() => {
         api
             .get("/rest/api/movie_dive/users/auth/me")
@@ -65,7 +68,7 @@ export default function UserPublicProfile() {
             .catch(() => setMe(null));
     }, []);
 
-    // ✅ follower/following count + isFollow
+    // ✅ follower/following count + isFollow (COUNTLARA DOKUNMADIM)
     const fetchRelationStats = async (targetUserId) => {
         try {
             const [fCountRes, fgCountRes] = await Promise.all([
@@ -73,10 +76,10 @@ export default function UserPublicProfile() {
                 api.get(`/rest/api/movie_dive/relation/get/followingcount/${targetUserId}`),
             ]);
 
+            // ✅ sen "şu an doğru" dedin, aynen bıraktım
             setFollowersCount(Number(fCountRes.data ?? 0));
             setFollowingCount(Number(fgCountRes.data ?? 0));
 
-            // isFollow sadece login varsa anlamlı
             if (meId && meId !== targetUserId) {
                 const isFollowRes = await api.get(
                     `/rest/api/movie_dive/relation/isfollow/${meId}/${targetUserId}`
@@ -94,6 +97,8 @@ export default function UserPublicProfile() {
 
     // ✅ profile + lists fetch
     useEffect(() => {
+        let cancelled = false;
+
         const run = async () => {
             try {
                 setLoading((p) => ({ ...p, profile: true }));
@@ -103,8 +108,9 @@ export default function UserPublicProfile() {
                 );
 
                 const u = profileRes.data;
-                setUser(u);
+                if (cancelled) return;
 
+                setUser(u);
                 setEvents([]);
 
                 const userId = u?.id;
@@ -127,25 +133,32 @@ export default function UserPublicProfile() {
                     safeGetList(`/rest/api/movie_dive/lists/getWatchlaterMovie/${userId}`),
                 ]);
 
+                if (cancelled) return;
+
                 setFavorites(favDtos);
                 setWatched(watchedDtos);
                 setLater(laterDtos);
             } finally {
-                setLoading((p) => ({
-                    ...p,
-                    profile: false,
-                    favorites: false,
-                    watched: false,
-                    later: false,
-                }));
+                if (!cancelled) {
+                    setLoading((p) => ({
+                        ...p,
+                        profile: false,
+                        favorites: false,
+                        watched: false,
+                        later: false,
+                    }));
+                }
             }
         };
 
         if (username) run().catch(() => {});
+        return () => {
+            cancelled = true;
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [username, meId]); // ✅ meId değişirse isFollow re-check olması için
+    }, [username, meId]);
 
-    // ✅ Kendim kendi profilime geldiysem /profile’a git (ID yoksa username ile)
+    // ✅ Kendim kendi profilime geldiysem /profile’a git
     useEffect(() => {
         if (!me?.username) return;
         if (!username) return;
@@ -158,7 +171,7 @@ export default function UserPublicProfile() {
         }
     }, [me?.username, username, navigate]);
 
-    // ✅ Follow modal helpers
+    // ✅ Follow modal open
     const openFollowModal = async (mode) => {
         const targetId = user?.id;
         if (!targetId) return;
@@ -169,11 +182,10 @@ export default function UserPublicProfile() {
         setFollowLoading(true);
 
         try {
-            // ✅ DOĞRU: followers -> get/followers, following -> get/followings
             const url =
                 mode === "followers"
-                    ? `/rest/api/movie_dive/relation/get/followers/${targetId}`
-                    : `/rest/api/movie_dive/relation/get/followings/${targetId}`;
+                    ? `/rest/api/movie_dive/relation/get/followings/${targetId}`
+                    : `/rest/api/movie_dive/relation/get/followers/${targetId}`;
 
             const res = await api.get(url);
             setFollowList(Array.isArray(res.data) ? res.data : []);
@@ -189,7 +201,7 @@ export default function UserPublicProfile() {
         setFollowModal((p) => ({ ...p, open: false }));
     };
 
-    // ✅ item normalize (DtoGetAllFollow şekli farklı olabilir)
+    // ✅ item normalize
     const getFollowUsername = (x) =>
         x?.username ??
         x?.user?.username ??
@@ -250,31 +262,77 @@ export default function UserPublicProfile() {
         navigate(`/movie/${movieId}`);
     };
 
-    const handleFollow = async () => {
+    // ✅ FOLLOW / UNFOLLOW: follow sonrası buton "Unfollow" olacak, basınca unfollow edecek
+    const handleFollowToggle = async () => {
         const targetId = user?.id;
         if (!targetId) return;
 
         if (!meId) {
+            alert("Login first");
             navigate("/login");
             return;
         }
 
-        if (meId === targetId) return;
+        if (meId === targetId) {
+            alert("You can't follow yourself.");
+            return;
+        }
 
+        if (followActionLoading) return;
+
+        setFollowActionLoading(true);
         try {
-            if (isFollowing) {
+            // ✅ server truth
+            const check = await api.get(`/rest/api/movie_dive/relation/isfollow/${meId}/${targetId}`);
+            const actuallyFollowing = check.data === true || check.data === "true";
+
+            if (actuallyFollowing) {
                 await api.post(`/rest/api/movie_dive/relation/unfollow/${targetId}`);
-                setIsFollowing(false);
+                setIsFollowing(false);                // ✅ anında UI düzelsin
                 setFollowersCount((c) => Math.max(0, c - 1));
             } else {
                 await api.post(`/rest/api/movie_dive/relation/follow/${targetId}`);
-                setIsFollowing(true);
+                setIsFollowing(true);                 // ✅ anında UI düzelsin
                 setFollowersCount((c) => c + 1);
             }
-        } catch {
-            // sessiz geç
+
+            // ✅ ardından server’dan tekrar çek (patlasa bile UI doğru kalır)
+            try {
+                await fetchRelationStats(targetId);
+            } catch {}
+        } catch (e) {
+            console.log("FOLLOW/UNFOLLOW ERROR:", e?.response?.status, e?.response?.data);
+            alert(e?.response?.data?.exception?.message || e?.response?.data?.message || "Action failed");
+        } finally {
+            setFollowActionLoading(false);
         }
     };
+    const handleFollow = async () => {
+        const targetId = user?.id;
+        if (!targetId || !meId) return;
+
+        try {
+            await api.post(`/rest/api/movie_dive/relation/follow/${targetId}`);
+            setIsFollowing(true);              // ✅ unfollow butonu görünsün
+            await fetchRelationStats(targetId);
+        } catch (e) {
+            alert("Follow failed");
+        }
+    };
+
+    const handleUnfollow = async () => {
+        const targetId = user?.id;
+        if (!targetId || !meId) return;
+
+        try {
+            await api.post(`/rest/api/movie_dive/relation/unfollow/${targetId}`);
+            setIsFollowing(false);             // ✅ unfollow butonu gizlensin
+            await fetchRelationStats(targetId);
+        } catch (e) {
+            alert("Unfollow failed");
+        }
+    };
+
 
     if (!user || loading.profile) return null;
 
@@ -320,11 +378,7 @@ export default function UserPublicProfile() {
                                 subtitle={loading.favorites ? "Loading..." : "Movies you liked"}
                                 isOpen={open.favorites}
                                 onToggle={() => toggle("favorites")}
-                                emptyText={
-                                    user?.id
-                                        ? "No favorite movies yet."
-                                        : "User id missing (backend must return id)."
-                                }
+                                emptyText={user?.id ? "No favorite movies yet." : "User id missing (backend must return id)."}
                                 empty={favorites.length === 0 && !loading.favorites}
                             >
                                 <PosterRail
@@ -343,11 +397,7 @@ export default function UserPublicProfile() {
                                 subtitle={loading.watched ? "Loading..." : "Movies you watched"}
                                 isOpen={open.watched}
                                 onToggle={() => toggle("watched")}
-                                emptyText={
-                                    user?.id
-                                        ? "No watched movies yet."
-                                        : "User id missing (backend must return id)."
-                                }
+                                emptyText={user?.id ? "No watched movies yet." : "User id missing (backend must return id)."}
                                 empty={watched.length === 0 && !loading.watched}
                             >
                                 <PosterRail
@@ -366,11 +416,7 @@ export default function UserPublicProfile() {
                                 subtitle={loading.later ? "Loading..." : "Movies saved for later"}
                                 isOpen={open.later}
                                 onToggle={() => toggle("later")}
-                                emptyText={
-                                    user?.id
-                                        ? "No movies in watch later yet."
-                                        : "User id missing (backend must return id)."
-                                }
+                                emptyText={user?.id ? "No movies in watch later yet." : "User id missing (backend must return id)."}
                                 empty={later.length === 0 && !loading.later}
                             >
                                 <PosterRail
@@ -397,7 +443,6 @@ export default function UserPublicProfile() {
 
                             {cityName && <div className="up-city">{cityName}</div>}
 
-                            {/* ✅ clickable followers/following */}
                             <div className="up-stats">
                                 <button
                                     className="up-stat up-statBtn"
@@ -421,13 +466,27 @@ export default function UserPublicProfile() {
                             </div>
 
                             <div className="up-side-buttons">
+                                {/* FOLLOW — hiç değişmez */}
                                 <button
-                                    className={`btn ${isFollowing ? "btn-ghost" : "btn-primary"}`}
+                                    className="btn btn-primary"
                                     onClick={handleFollow}
+                                    disabled={!meId || meId === user?.id}
                                 >
-                                    {!meId ? "Login to follow" : isFollowing ? "Following" : "Follow"}
+                                    Follow
                                 </button>
+
+                                {/* UNFOLLOW — sadece takip ediyorsan görünür */}
+                                {isFollowing && (
+                                    <button
+                                        className="btn btn-danger"
+                                        onClick={handleUnfollow}
+                                        style={{marginTop: "8px"}}
+                                    >
+                                        Unfollow
+                                    </button>
+                                )}
                             </div>
+
                         </div>
                     </aside>
                 </div>
@@ -447,7 +506,7 @@ export default function UserPublicProfile() {
                             const un = getFollowUsername(item);
                             if (un) {
                                 closeFollowModal();
-                                navigate(`/u/${encodeURIComponent(un)}`); // ✅ FIX
+                                navigate(`/u/${encodeURIComponent(un)}`);
                             }
                         }}
                     />
@@ -471,11 +530,7 @@ function DashboardSection({ title, subtitle, isOpen, onToggle, children, empty, 
                 <div className="ud-box-arrow">{isOpen ? "˅" : "›"}</div>
             </button>
 
-            {isOpen && (
-                <div className="ud-railArea">
-                    {empty ? <div className="ud-empty">{emptyText}</div> : children}
-                </div>
-            )}
+            {isOpen && <div className="ud-railArea">{empty ? <div className="ud-empty">{emptyText}</div> : children}</div>}
         </section>
     );
 }
@@ -525,9 +580,7 @@ function PosterRail({ items, type, getImage, getTitle, getYear, getRating, onOpe
                             <div className="ud-cardTitle">{safeTitle(item)}</div>
 
                             <div className="ud-cardDesc">
-                                {type === "movie"
-                                    ? `⭐ Rating: ${Number(getRating(item) ?? 0).toFixed(1)}`
-                                    : item?.desc}
+                                {type === "movie" ? `⭐ Rating: ${Number(getRating(item) ?? 0).toFixed(1)}` : item?.desc}
                             </div>
 
                             <button className="ud-cta" onClick={() => onOpen(item)} type="button">
@@ -548,7 +601,17 @@ function PosterRail({ items, type, getImage, getTitle, getYear, getRating, onOpe
 /* =========================
    FOLLOW LIST MODAL
    ========================= */
-function FollowListModal({ title, loading, error, items, onClose, onOpenUser, getUsername, getName, getId }) {
+function FollowListModal({
+                             title,
+                             loading,
+                             error,
+                             items,
+                             onClose,
+                             onOpenUser,
+                             getUsername,
+                             getName,
+                             getId,
+                         }) {
     const onBackdrop = (e) => {
         if (e.target.classList.contains("flm-backdrop")) onClose();
     };

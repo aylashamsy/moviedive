@@ -19,11 +19,9 @@ public class EventResponse {
 
     private Long movieId;      // nullable
     private String movieTitle; // nullable
-
+    private String poster_path;
     private String eventDateTime;
-
     private Long createdByUserId;
     private String createdByUsername;
-
     private long registeredCount;
 }

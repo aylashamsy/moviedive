@@ -21,4 +21,8 @@ public interface IEventService {
     EventResponse updateEvent(Long id, EventUpdateRequest request, HttpSession session);
 
     String registerToEvent(Long eventId, HttpSession session);
+
+    List<EventResponse> getMyRegisteredEvents(HttpSession session);
+
+
 }
