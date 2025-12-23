@@ -50,11 +50,15 @@ public class MovieControllerImpl implements IMovieController
     }
     @Override
     @GetMapping(path = "/movies/latest20")
-  //  @Scheduled(cron = "*,30,9,*,*,7" )
     public List<Movie> findTop20ByOrderByIdAsc() {
 
         return tmdbService.trendingMoviesOfWeekTop20();
     }
+    @Override
+    @GetMapping(path = "/allmovies")
+    public List<Movie> importAllMovies() {
 
+        return movieService.importAllMovies();
+    }
 
 }

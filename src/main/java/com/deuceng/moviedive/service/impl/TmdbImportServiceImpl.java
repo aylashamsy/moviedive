@@ -113,7 +113,7 @@ public class TmdbImportServiceImpl implements ITmdbService {
     public void importAllMoviesWithDiscover() {
 
         int page = 1;
-        final int totalPages = 20;
+        final int totalPages = 500;
 
         while (page <= totalPages) {
 

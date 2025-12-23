@@ -20,4 +20,6 @@ public interface IMovieController
 
     @GetMapping(path = "/movies/latest20")
     List<Movie> findTop20ByOrderByIdAsc();
+
+    public List<Movie> importAllMovies();
 }

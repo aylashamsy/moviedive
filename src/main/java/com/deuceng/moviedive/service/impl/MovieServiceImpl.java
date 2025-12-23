@@ -110,4 +110,7 @@ public class MovieServiceImpl implements IMovieService {
         return dtomovie;
     }
 
-}
+    @Override
+    public List<Movie> importAllMovies() {
+        return movieRepository.findAll();
+}}

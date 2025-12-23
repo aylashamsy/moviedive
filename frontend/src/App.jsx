@@ -12,6 +12,7 @@ import ProtectedRoute from "./context/ProtectedRoute";
 import UserPublicProfile  from "./pages/UserPublicProfile.jsx";
 import EventCreate  from "./pages/EventCreate.jsx";
 import AllEvents from "./pages/AllEvents.jsx";
+import AllMovies from "./pages/AllMovie.jsx"
 function App() {
     const location = useLocation();
     const navigate = useNavigate();
@@ -41,6 +42,7 @@ function App() {
                 <Route path="/profile/:username" element={<UserPublicProfile />} />
                 <Route path="/events/create" element={<EventCreate />} />
                 <Route path="/allevents" element={<AllEvents />} />
+                <Route path="/allmovies" element={<AllMovies />} />
                 <Route path="*" element={<NotFound />} />
             </Routes>
 

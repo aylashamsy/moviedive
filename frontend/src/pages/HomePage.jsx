@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/HomePage.css";
 
 export default function HomePage() {
-    // ✅ EVENTS artık backend’den gelecek
+    // ✅ EVENTS backend’den gelecek
     const [events, setEvents] = useState([]);
     const [eventsLoading, setEventsLoading] = useState(true);
 
-    // ✅ MOVIES zaten backend’den geliyor
+    // ✅ MOVIES backend’den gelecek
     const [movies, setMovies] = useState([]);
     const [moviesLoading, setMoviesLoading] = useState(true);
 
@@ -17,12 +17,10 @@ export default function HomePage() {
             try {
                 setEventsLoading(true);
 
-                // ✅ BURAYI kendi endpoint’in ile değiştir
-                // örn: /rest/api/movie_dive/events/allevents
-                const res = await fetch("http://localhost:8080/rest/api/movie_dive/events/upcoming", {
-                    method: "GET",
-                    credentials: "include",
-                });
+                const res = await fetch(
+                    "http://localhost:8080/rest/api/movie_dive/events/upcoming",
+                    { method: "GET", credentials: "include" }
+                );
                 if (!res.ok) throw new Error("Events fetch failed");
                 const data = await res.json();
 
@@ -32,7 +30,7 @@ export default function HomePage() {
                     city: e.cityName ?? (e.cityId ? `City #${e.cityId}` : ""),
                     date: (e.eventDateTime || "").split("T")[0] || "",
                     desc: e.description || "",
-                    poster_path: e.posterPath || e.poster_path || null, // dto'nda hangisi varsa
+                    poster_path: e.posterPath || e.poster_path || null,
                 }));
 
                 setEvents(mapped);
@@ -46,14 +44,15 @@ export default function HomePage() {
             // MOVIES
             try {
                 setMoviesLoading(true);
-                const res = await fetch("http://localhost:8080/rest/api/movie_dive/movies/latest20", {
-                    method: "GET",
-                    credentials: "include",
-                });
+
+                const res = await fetch(
+                    "http://localhost:8080/rest/api/movie_dive/movies/latest20",
+                    { method: "GET", credentials: "include" }
+                );
                 if (!res.ok) throw new Error("Movies fetch failed");
                 const data = await res.json();
 
-                const mapped = (data ?? []).map((m) => ({
+                const mapped = (Array.isArray(data) ? data : []).map((m) => ({
                     id: m.id,
                     tmdbId: m.tmdbId,
                     title: m.title,
@@ -79,24 +78,17 @@ export default function HomePage() {
             <div className="hp-container">
                 <header className="hp-hero">
                     <h1 className="hp-h1">Discover movies & events in one place</h1>
-                    <p className="hp-sub">Use the sections below to explore events and trending movies.</p>
+                    <p className="hp-sub">
+                        Use the sections below to explore events and trending movies.
+                    </p>
                 </header>
 
-                <SectionTitle
-                    title="Events"
-                    subtitle="Upcoming events"
-                    to="/allevents"
-                />
-
+                <SectionTitle title="Events" subtitle="Upcoming events" to="/allevents" />
 
                 {eventsLoading ? (
                     <div className="hp-sub">Loading events...</div>
                 ) : (
-                    <PosterRail
-                        items={events}
-                        type="event"
-                        getImage={(e) => e.poster_path}   // ✅ event poster
-                    />
+                    <PosterRail items={events} type="event" getImage={(e) => e.poster_path} />
                 )}
 
                 <div className="hp-spacer" />
@@ -106,7 +98,12 @@ export default function HomePage() {
                 {moviesLoading ? (
                     <div className="hp-sub">Loading movies...</div>
                 ) : (
-                    <PosterRail items={movies} type="movie" getImage={(m) => m.poster_path} />
+                    <>
+                        <PosterRail items={movies} type="movie" getImage={(m) => m.poster_path} />
+
+                        {/* ✅ View all movies button */}
+                        <ViewAllButton to="/allmovies" label="View All Movies" />
+                    </>
                 )}
             </div>
         </div>
@@ -115,13 +112,14 @@ export default function HomePage() {
 
 function SectionTitle({ title, subtitle, to }) {
     const navigate = useNavigate();
-
     const clickable = Boolean(to);
 
     return (
         <div className="hp-sectionHead">
             <div
-                className={`hp-sectionTitleWrap ${clickable ? "hp-sectionTitleClickable" : ""}`}
+                className={`hp-sectionTitleWrap ${
+                    clickable ? "hp-sectionTitleClickable" : ""
+                }`}
                 onClick={clickable ? () => navigate(to) : undefined}
                 role={clickable ? "button" : undefined}
                 tabIndex={clickable ? 0 : undefined}
@@ -142,6 +140,17 @@ function SectionTitle({ title, subtitle, to }) {
     );
 }
 
+function ViewAllButton({ to, label }) {
+    const navigate = useNavigate();
+    return (
+        <div className="hp-viewAllWrap">
+            <button className="hp-viewAllBtn" onClick={() => navigate(to)}>
+                {label}
+            </button>
+        </div>
+    );
+}
+
 function PosterRail({ items, type, getImage }) {
     const railRef = useRef(null);
     const navigate = useNavigate();
@@ -154,11 +163,6 @@ function PosterRail({ items, type, getImage }) {
         el.scrollBy({ left: dir * (cardWidth + gap), behavior: "smooth" });
     };
 
-    const safeBg = (url) => {
-        const u = getImage?.(url); // yanlış kullanım olmasın
-        return u ? `url("${u}")` : "none";
-    };
-
     return (
         <div className="hp-railWrap">
             <button className="hp-arrow hp-arrowLeft" onClick={() => scrollByCard(-1)}>
@@ -168,21 +172,24 @@ function PosterRail({ items, type, getImage }) {
             <div ref={railRef} className="hp-rail">
                 {items.map((item) => {
                     const bg = getImage?.(item);
+
                     return (
                         <div
                             key={item.tmdbId ?? item.id}
-                            className={`hp-card hp-card--poster ${type === "movie" ? "hp-card--movie" : ""}`}
+                            className={`hp-card hp-card--poster ${
+                                type === "movie" ? "hp-card--movie" : ""
+                            }`}
                             style={{ backgroundImage: bg ? `url("${bg}")` : undefined }}
                         >
                             <div className="hp-cardInner">
                                 <div className="hp-cardTop">
                                     <div className="hp-badge">
-                                        {type === "movie" ? item.release_date?.slice(0, 4) : item.city || "City"}
+                                        {type === "movie"
+                                            ? item.release_date?.slice(0, 4)
+                                            : item.city || "City"}
                                     </div>
 
-                                    <div className="hp-muted">
-                                        {type === "movie" ? "" : item.date || ""}
-                                    </div>
+                                    <div className="hp-muted">{type === "movie" ? "" : item.date || ""}</div>
                                 </div>
 
                                 <div className="hp-cardTitle">{item.title}</div>
@@ -190,16 +197,20 @@ function PosterRail({ items, type, getImage }) {
                                 <div className="hp-cardDesc">
                                     {type === "movie"
                                         ? `⭐ Rating: ${item.vote_average?.toFixed?.(1) ?? item.vote_average ?? "-"}`
-                                        : (item.desc?.length > 70 ? item.desc.slice(0, 70) + "…" : item.desc)}
+                                        : item.desc?.length > 70
+                                            ? item.desc.slice(0, 70) + "…"
+                                            : item.desc}
                                 </div>
 
-                                {/* ✅ BUTON */}
                                 {type === "movie" ? (
                                     <button className="hp-cta" onClick={() => navigate(`/movie/${item.id}`)}>
                                         Open
                                     </button>
                                 ) : (
-                                    <button className="hp-cta" onClick={() => navigate(`/eventdetail/${item.id}`)}>
+                                    <button
+                                        className="hp-cta"
+                                        onClick={() => navigate(`/eventdetail/${item.id}`)}
+                                    >
                                         View details
                                     </button>
                                 )}
