@@ -2,7 +2,6 @@ package com.deuceng.moviedive.controller;
 
 import com.deuceng.moviedive.dto.RegisterRequest;
 import com.deuceng.moviedive.dto.RegisterResponse;
-import com.deuceng.moviedive.dto.UserResponseDto;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.RequestBody;
 

@@ -3,6 +3,7 @@ package com.deuceng.moviedive.controller.impl;
 import com.deuceng.moviedive.controller.IMovieController;
 import com.deuceng.moviedive.dto.MovieDto;
 import com.deuceng.moviedive.entity.Movie;
+import com.deuceng.moviedive.repository.MovieRepository;
 import com.deuceng.moviedive.service.IMovieService;
 import com.deuceng.moviedive.service.ITmdbService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ public class MovieControllerImpl implements IMovieController
     private IMovieService movieService;
     @Autowired
     private ITmdbService tmdbService;
+    @Autowired
+    private MovieRepository movieRepository;
     @Override
     @GetMapping(path="getbyid/{id}")
     public MovieDto findbyid(@PathVariable (name="id") long id)
@@ -52,5 +55,6 @@ public class MovieControllerImpl implements IMovieController
 
         return tmdbService.trendingMoviesOfWeekTop20();
     }
+
 
 }

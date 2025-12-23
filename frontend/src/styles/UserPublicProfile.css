@@ -1,0 +1,235 @@
+/* =========================
+   LEFT area container
+   ========================= */
+.up-dash{
+    display: grid;
+    gap: 18px;
+}
+
+/* =========================
+   DASHBOARD SECTION (ud-*)
+   ========================= */
+.ud-section{
+    border-radius: 22px;
+    background: rgba(18,18,26,0.75);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+    overflow: hidden;
+}
+
+.ud-box{
+    all: unset;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    background: rgba(255,255,255,0.02);
+    color: rgba(229,231,235,0.95);
+}
+.ud-box:hover{
+    background: rgba(255,255,255,0.045);
+}
+
+.ud-box-left{
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ud-box-title{
+    font-size: 19px;
+    font-weight: 900;
+    line-height: 1.05;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ud-box-sub{
+    font-size: 14px;
+    font-weight: 700;
+    opacity: 0.72;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ud-box-arrow{
+    flex: 0 0 auto;
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.10);
+    font-size: 20px;
+    font-weight: 900;
+    opacity: 0.9;
+}
+
+/* body area */
+.ud-railArea{
+    padding: 16px 22px 22px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.ud-empty{
+    padding: 14px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    font-size: 13px;
+    font-weight: 700;
+    opacity: 0.85;
+}
+
+/* =========================
+   POSTER RAIL
+   ========================= */
+.ud-railWrap{
+    position: relative;
+}
+
+.ud-rail{
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(220px, 1fr);
+    gap: 18px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 4px 56px; /* oklar için boşluk */
+}
+
+.ud-rail::-webkit-scrollbar{
+    height: 10px;
+}
+.ud-rail::-webkit-scrollbar-thumb{
+    background: rgba(255,255,255,0.12);
+    border-radius: 999px;
+}
+.ud-rail::-webkit-scrollbar-track{
+    background: rgba(255,255,255,0.04);
+    border-radius: 999px;
+}
+
+.ud-card{
+    height: 330px;
+    border-radius: 26px;
+    background-size: cover;
+    background-position: center;
+    border: 1px solid rgba(255,255,255,0.10);
+    box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+    overflow: hidden;
+    position: relative;
+}
+
+.ud-card::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.75));
+}
+
+.ud-cardInner{
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.ud-cardTop{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.ud-badge{
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.14);
+}
+
+.ud-muted{
+    font-size: 12px;
+    font-weight: 800;
+    opacity: 0.75;
+}
+
+.ud-cardTitle{
+    font-size: 20px;
+    font-weight: 900;
+    line-height: 1.1;
+    text-shadow: 0 8px 20px rgba(0,0,0,0.45);
+}
+
+.ud-cardDesc{
+    font-size: 13px;
+    font-weight: 800;
+    opacity: 0.85;
+}
+
+.ud-cta{
+    all: unset;
+    cursor: pointer;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-weight: 900;
+    background: rgba(180,60,120,0.85);
+    border: 1px solid rgba(255,255,255,0.12);
+    display: inline-grid;
+    place-items: center;
+    width: fit-content;
+}
+.ud-cta:hover{
+    background: rgba(180,60,120,0.95);
+}
+
+/* arrows */
+.ud-arrow{
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 56px;
+    height: 56px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(0,0,0,0.35);
+    color: rgba(229,231,235,0.95);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    font-size: 28px;
+    font-weight: 900;
+    z-index: 3;
+    backdrop-filter: blur(10px);
+}
+
+.ud-arrow:hover{
+    background: rgba(0,0,0,0.50);
+}
+
+.ud-arrowLeft{ left: 0; }
+.ud-arrowRight{ right: 0; }
+
+/* responsive: rail cards smaller */
+@media (max-width: 980px){
+    .ud-rail{
+        padding: 4px 46px;
+        grid-auto-columns: minmax(200px, 1fr);
+    }
+    .ud-card{ height: 300px; }
+}

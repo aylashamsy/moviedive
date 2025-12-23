@@ -1,8 +1,8 @@
 package com.deuceng.moviedive.service.impl;
 
+import com.deuceng.moviedive.dto.ChangePasswordRequest;
 import com.deuceng.moviedive.dto.RegisterRequest;
 import com.deuceng.moviedive.dto.RegisterResponse;
-import com.deuceng.moviedive.dto.UserResponseDto;
 import com.deuceng.moviedive.entity.City;
 import com.deuceng.moviedive.entity.User;
 import com.deuceng.moviedive.exception.BaseException;
@@ -80,5 +80,56 @@ public class ProfileServiceImpl implements IProfileServices {
         BeanUtils.copyProperties(user, dtoUpdateUserRequest);
         dtoUpdateUserRequest.setCityId(user.getCity().getId());
         return dtoUpdateUserRequest;
+    }
+    @Override
+    public RegisterResponse changePassword(Long id, ChangePasswordRequest request) {
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new BaseException(
+                        new ErrorMessage<>(MessageType.NO_RECORD_EXIST,
+                                "Böyle bir kullanıcı yok", id)
+                ));
+
+        // 🔒 Null / boş kontrol
+        if (request == null ||
+                request.getOldPassword() == null ||
+                request.getNewPassword() == null ||
+                request.getConfirmPassword() == null) {
+
+            throw new BaseException(
+                    new ErrorMessage<>(MessageType.GENERAL_EXCEPTION,
+                            "Şifre alanları boş olamaz", null)
+            );
+        }
+
+        // 🔒 eski şifre doğru mu?
+        if (!user.getPassword().equals(request.getOldPassword())) {
+            throw new BaseException(
+                    new ErrorMessage<>(MessageType.GENERAL_EXCEPTION,
+                            "Eski şifre yanlış", null)
+            );
+        }
+
+        // 🔒 yeni şifreler eşleşiyor mu?
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new BaseException(
+                    new ErrorMessage<>(MessageType.GENERAL_EXCEPTION,
+                            "Yeni şifreler uyuşmuyor", null)
+            );
+        }
+
+
+        // ✅ şifreyi değiştir (plain text)
+        user.setPassword(request.getNewPassword());
+        userRepository.save(user);
+
+        RegisterResponse dto = new RegisterResponse();
+        BeanUtils.copyProperties(user, dto);
+
+        if (user.getCity() != null) {
+            dto.setCityName(user.getCity().getName());
+        }
+
+        return dto;
     }
 }

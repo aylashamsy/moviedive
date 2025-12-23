@@ -3,11 +3,11 @@ package com.deuceng.moviedive.controller.impl;
 import com.deuceng.moviedive.controller.IProfileController;
 import com.deuceng.moviedive.dto.RegisterRequest;
 import com.deuceng.moviedive.dto.RegisterResponse;
-import com.deuceng.moviedive.dto.UserResponseDto;
 import com.deuceng.moviedive.service.IProfileServices;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import com.deuceng.moviedive.dto.ChangePasswordRequest;
 
 @RestController
 @RequestMapping(path="rest/api/movie_dive/profile/")
@@ -40,4 +40,13 @@ public class ProfileControllerImpl implements IProfileController
     {
         return profileService.findByUsername(name);
     }
+
+
+    @PutMapping(path="change-password")
+    public RegisterResponse changePassword(HttpSession session,
+                                           @RequestBody ChangePasswordRequest request) {
+        Long id = (Long) session.getAttribute("USER_ID");
+        return profileService.changePassword(id, request);
+    }
+
 }

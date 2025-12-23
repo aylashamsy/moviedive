@@ -464,3 +464,38 @@
     .md-left{ position: relative; top: 0; }
     .md-title{ font-size: 36px; }
 }
+/* Delete comment button */
+.md-commentDel {
+    margin-left: 10px;
+    padding: 4px 10px;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    border-radius: 10px;
+    border: 1px solid rgba(220, 38, 38, 0.45);
+
+    background: rgba(220, 38, 38, 0.12);
+    color: rgba(248, 113, 113, 0.95);
+
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+/* Hover */
+.md-commentDel:hover {
+    background: rgba(220, 38, 38, 0.25);
+    color: #fff;
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25);
+}
+
+/* Active (click) */
+.md-commentDel:active {
+    transform: scale(0.96);
+}
+
+/* Focus (keyboard accessibility) */
+.md-commentDel:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.35);
+}

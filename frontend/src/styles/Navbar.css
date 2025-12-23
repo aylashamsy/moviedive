@@ -145,3 +145,188 @@
             0 0 6px rgba(236, 72, 153, 0.6),
             0 0 16px rgba(236, 72, 153, 0.35);
 }
+.searchWrap{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+
+    position: relative;          /* ✅ ikonun referansı burası */
+}
+
+/* ikonu inputun içine yerleştirmek için */
+.searchIcon{
+    position: absolute;
+    left: 50%;
+    transform: translate(-280px, -50%);  /* ✅ input genişliğine göre ortalanmış konum */
+    top: 50%;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* input soldan ikon için padding */
+.search{
+    width: min(560px, 100%);
+    padding: 12px 14px 12px 44px; /* ✅ sol padding arttı (ikon için) */
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.06);
+    outline: none;
+    color: #e5e7eb;
+}
+.searchWrap {
+    position: relative;
+    width: min(520px, 52vw);
+}
+
+.searchIcon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.65;
+    pointer-events: none;
+}
+
+.search {
+    width: 100%;
+    height: 42px;
+    padding: 0 14px 0 42px;
+    border-radius: 999px;
+
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    color: rgba(229,231,235,0.95);
+
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.search::placeholder {
+    color: rgba(229,231,235,0.50);
+}
+
+.search:focus {
+    background: rgba(255,255,255,0.11);
+    border-color: rgba(180,60,120,0.75);
+    box-shadow: 0 0 0 3px rgba(180,60,120,0.20);
+}
+
+/* DROPDOWN */
+.searchDrop {
+    position: absolute;
+    top: 50px;
+    left: 0;
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+
+    background: rgba(18,18,26,0.98);
+    border: 1px solid rgba(255,255,255,0.10);
+    box-shadow: 0 22px 50px rgba(0,0,0,0.65);
+    backdrop-filter: blur(12px);
+    z-index: 200;
+}
+
+.searchEmpty {
+    padding: 14px 16px;
+    font-size: 13px;
+    opacity: 0.75;
+}
+
+.searchGroup {
+    padding: 8px 0;
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.searchGroup:first-child {
+    border-top: none;
+}
+
+.searchGroupTitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 900;
+    opacity: 0.75;
+}
+
+.searchItem {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+
+    border: none;
+    background: transparent;
+    color: rgba(229,231,235,0.95);
+    text-align: left;
+    cursor: pointer;
+
+    transition: background 0.15s ease;
+}
+
+.searchItem:hover {
+    background: rgba(255,255,255,0.07);
+}
+
+.searchThumb {
+    width: 34px;
+    height: 48px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.10);
+    background-size: cover;
+    background-position: center;
+    flex: 0 0 auto;
+}
+
+.searchAvatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    font-weight: 900;
+
+    background: rgba(180,60,120,0.90);
+    border: 1px solid rgba(255,255,255,0.10);
+    flex: 0 0 auto;
+}
+
+.searchItemText {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.searchItemTitle {
+    font-size: 14px;
+    font-weight: 900;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.searchItemSub {
+    font-size: 12px;
+    opacity: 0.70;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.searchHint {
+    padding: 10px 16px;
+    font-size: 12px;
+    opacity: 0.65;
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.searchHint span {
+    font-weight: 900;
+    opacity: 0.95;
+}

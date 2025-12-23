@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import AuthModal from "./components/AuthModal";
 import "./styles/Pages.css";
 import ProtectedRoute from "./context/ProtectedRoute";
+import UserPublicProfile  from "./pages/UserPublicProfile.jsx";
 
 function App() {
     const location = useLocation();
@@ -36,6 +37,7 @@ function App() {
                 <Route path="/profile" element={<UserProfile />} />
                 <Route path="/movie/:id" element={<MovieDetail />} />
                 <Route path="/event/:id" element={<EventDetail />} />
+                <Route path="/u/:userId" element={<UserPublicProfile />} />
 
                 <Route path="*" element={<NotFound />} />
             </Routes>
