@@ -15,9 +15,14 @@ import java.util.Optional;
 @Repository
 public interface UserMovieFeedbackRepository extends JpaRepository<UserMovieFeedback, Long> {
 
+
+    List<UserMovieFeedback> findAlLlByUser_IdAndMovie_Id(Long userId, Long movieId);
+
     Optional<UserMovieFeedback> findByUser_IdAndMovie_Id(Long userId, Long movieId);
 
     List<UserMovieFeedback> findByMovie_Id(Long movieId);
+
+    List<UserMovieFeedback> findAllByUser_IdAndMovie_Id(Long userId, Long movieId);
 
     List<UserMovieFeedback> findByUser_Id(Long userId);
 

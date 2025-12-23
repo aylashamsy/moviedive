@@ -17,6 +17,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -40,24 +41,37 @@ public class IUserMovieFeedbackServiceImpl implements IUserMovieFeedbackService 
     @Transactional
     @Override
     public void deleteRating(Long user_id, Long movie_id){
-        UserMovieFeedback rating = userMovieFeedbackRepository.findByUser_IdAndMovie_Id(user_id, movie_id).orElseThrow(() -> new BaseException(new ErrorMessage<>(MessageType.NO_RECORD_EXIST," Böyle bir puanlama yok",user_id)));
-        Movie movie= rating.getMovie();
-        double oldRating = movie.getVote_average();
-        int oldVoteCount = Integer.parseInt(movie.getVote_count());
-        double userScore=rating.getScore();
-        if(oldVoteCount==1)
+        List<UserMovieFeedback> rating = userMovieFeedbackRepository.findAlLlByUser_IdAndMovie_Id(user_id, movie_id);
+        UserMovieFeedback userMovieFeedback=null;
+        for(int i =0;i<rating.size();i++)
         {
-            movie.setVote_average(0.0);
-            movie.setVote_count(String.valueOf(0));
+            if(rating.get(i).getScore()!=null)
+            {
+                userMovieFeedback=rating.get(i);
+                Movie movie=userMovieFeedback.getMovie();
+                Double userScore=userMovieFeedback.getScore();
+                Double oldRating = userMovieFeedback.getMovie().getVote_average();
+                int oldVoteCount = Integer.parseInt(userMovieFeedback.getMovie().getVote_count());
+                if(oldVoteCount==1)
+                {
+                    movie.setVote_average(0.0);
+                    movie.setVote_count(String.valueOf(0));
+                }
+                else
+                {
+                    double newRating = (oldRating * oldVoteCount - userScore) / (oldVoteCount-1);
+                    movie.setVote_average(newRating);
+                    movie.setVote_count(String.valueOf(oldVoteCount - 1));
+                }
+                userMovieFeedbackRepository.delete(userMovieFeedback);
+                movieRepository.save(movie);
+                break;
+            }
         }
-        else
+        if(userMovieFeedback==null)
         {
-            double newRating = (oldRating * oldVoteCount - userScore) / (oldVoteCount-1);
-            movie.setVote_average(newRating);
-            movie.setVote_count(String.valueOf(oldVoteCount - 1));
+            throw new BaseException(new ErrorMessage<>(MessageType.NO_RECORD_EXIST, " Bu filme puanlama yapılmamış(ya sadece yorum atılmış ya da hiçbiri)",movie_id));
         }
-        userMovieFeedbackRepository.delete(rating);
-        movieRepository.save(movie);
     }
 
     @Transactional
@@ -66,21 +80,21 @@ public class IUserMovieFeedbackServiceImpl implements IUserMovieFeedbackService 
     {
         User user = userRepository.findById(user_id).orElseThrow(() -> new BaseException(new ErrorMessage<>(MessageType.NO_RECORD_EXIST," Böyle bir kullanıcı yok",user_id)));
         Movie movie = movieRepository.findById(movie_id).orElseThrow(() -> new BaseException(new ErrorMessage<>(MessageType.NO_RECORD_EXIST," Böyle bir film yok",movie_id)));
-        Optional<UserMovieFeedback> rating = userMovieFeedbackRepository.findByUser_IdAndMovie_Id(user_id, movie_id);
+//        Optional<UserMovieFeedback> rating = userMovieFeedbackRepository.findByUser_IdAndMovie_Id(user_id, movie_id);
         double oldRating = movie.getVote_average();
         int oldVoteCount = Integer.parseInt(movie.getVote_count());
 
         UserMovieFeedback feedback;
-        if(rating.isPresent())
-        {
-            feedback = rating.get();
-            double oldUserScore = feedback.getScore();
-
-            double newRating = (oldRating * oldVoteCount - oldUserScore + score) / oldVoteCount;
-            movie.setVote_average(newRating);
-        }
-        else
-        {
+//        if(rating.isPresent())
+//        {
+//            feedback = rating.get();
+//            double oldUserScore = feedback.getScore();
+//
+//            double newRating = (oldRating * oldVoteCount - oldUserScore + score) / oldVoteCount;
+//            movie.setVote_average(newRating);
+//        }
+//        else
+//        {
             feedback = new UserMovieFeedback();
             feedback.setUser(user);
             feedback.setMovie(movie);
@@ -89,7 +103,7 @@ public class IUserMovieFeedbackServiceImpl implements IUserMovieFeedbackService 
             movie.setVote_average(newRating);
             int new_vote_count=oldVoteCount+1;
             movie.setVote_count(String.valueOf(new_vote_count));
-        }
+//        }
         feedback.setScore(score);
         feedback.setUser(user);
         feedback.setMovie(movie);

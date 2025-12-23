@@ -111,4 +111,10 @@ public class AuthenticationControllerImpl implements IAuthenticationController {
         }
         AuthenticationService.deleteUser(id);
     }
+
+    @Override
+    @GetMapping(path="getuserbyusername/{username}")
+    public RegisterResponse getUserByUserName(@PathVariable (name="username")String username){
+        return AuthenticationService.getUserByUserName(username);
+    }
 }
